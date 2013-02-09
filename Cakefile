@@ -19,9 +19,8 @@ createDbCreateSteps= ()->
     model = require('./database/model')
     return [
         (step, err)->model.sequelize.sync().success(step.next).error((error)->throw error)
-        (step, err)->
-            console.log('All tables have been created!!')
-            step.next()
+        (step, err)->model.sequelize.getQueryInterface().removeColumn('Reminders', 'id'); step:next()
+        (step, err)->model.sequelize.getQueryInterface().addIndex('Reminders',['Id','Version'], {indicesType:'UNIQUE'}); step:next()
     ]
     
 
