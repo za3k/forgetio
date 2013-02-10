@@ -10,6 +10,7 @@ sequelize = new Sequelize('notify','postgres','brinksucksballs', {
     port:nconf.get("dbPort")
     dialect:'postgres'
     logging:logger.debug
+    omitNull:true
 })
 extern("Sequelize",Sequelize)
 extern("sequelize",sequelize)
@@ -17,7 +18,6 @@ defaultID = {
     type: Sequelize.INTEGER
     autoIncrement: true
     primaryKey: true
-    allowNull: false
 }
 define = (name, options)->
     tmp = sequelize.define(name, options)
@@ -26,46 +26,45 @@ define = (name, options)->
 
 # Actual Model Starts Here
 Phone = define('Phone', {
-    Id:defaultID
-    Number:{ type:Sequelize.STRING, allowNull:false }
-    ConfirmedDate:{ type:Sequelize.DATE, defaultValue:null }
+    id:defaultID
+    number:{ type:Sequelize.STRING, allowNull:false }
+    confirmedDate:{ type:Sequelize.DATE, defaultValue:null }
 })
 
 User = define('User', {
-    Id:defaultID
-    Credit:{ type:Sequelize.INTEGER, allowNull:false } # in messages
-    Name:{ type:Sequelize.STRING, allowNull:false } 
+    id:defaultID
+    credit:{ type:Sequelize.INTEGER, allowNull:false } # in messages
+    name:{ type:Sequelize.STRING, allowNull:false } 
 })
 
 UserRole = define('UserRole', {
-    Role:{ type:Sequelize.STRING, allowNull:false }
+    role:{ type:Sequelize.STRING, allowNull:false }
 })
     
 Reminder = define('Reminder', {
-    Id:{ type: Sequelize.INTEGER, allowNull: false }
-    Version:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0}
-    Message:{ type:Sequelize.STRING, allowNull:false, defaultValue:"" }
-    Enabled:{ type:Sequelize.BOOLEAN, allowNull:false, defaultValue:true}
+    id:{ type: Sequelize.INTEGER, allowNull: false }
+    version:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0}
+    message:{ type:Sequelize.STRING, allowNull:false, defaultValue:"" }
+    enabled:{ type:Sequelize.BOOLEAN, allowNull:false, defaultValue:true}
 })
 
 ReminderTime = define('ReminderTime', {
-    Start:{ type:Sequelize.INTEGER, allowNull:false }
-    End:{ type:Sequelize.INTEGER, allowNull:false }
-    Frequency:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 }
-    Days:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 } # flag field where    1:sun 2:mon 4:tue 8:wed 16:thur 32:fri 64:sat
+    start:{ type:Sequelize.INTEGER, allowNull:false }
+    end:{ type:Sequelize.INTEGER, allowNull:false }
+    frequency:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 }
+    days:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 } # flag field where    1:sun 2:mon 4:tue 8:wed 16:thur 32:fri 64:sat
 })
 
 TimeZone = define('TimeZone', {
-    Id:defaultID
-    Offset:{ type:Sequelize.INTEGER }
-    Text:{ type:Sequelize.STRING }
+    id:defaultID
+    offset:{ type:Sequelize.FLOAT, allowNull:false }
+    text:{ type:Sequelize.STRING, allowNull:false }
 })
 
 # Associations
-UserRole.belongsTo(User)
-User.hasMany(UserRole)
-User.hasMany(Reminder)
-User.hasOne(TimeZone)
-Reminder.hasMany(ReminderTime)
-Reminder.belongsTo(Phone)
-Phone.belongsTo(User)
+User.hasMany(UserRole, {as:'userId'})
+User.hasMany(Reminder, {as:'reminderId'})
+User.belongsTo(TimeZone, {as:'timeZoneId'})
+Reminder.hasMany(ReminderTime, {as:'reminderId'})
+Reminder.belongsTo(Phone, {as:'phoneId'})
+Phone.belongsTo(User, {as:'userId'})

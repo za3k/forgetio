@@ -1,3 +1,6 @@
+# patch Date object to support time zones
+require('time')(Date)
+
 # load config
 nconf = require('nconf')
 nconf.env().argv() # process.env and process.argv
