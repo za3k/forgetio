@@ -1,2 +1,99 @@
 <% extend 'layout.ect' %>
-Scheduled messages
+<form>
+  <div class="well">
+    Message: <input type="text" class="input-block-level" value="How happy are you right now on a scale of 0-10?"/><br />
+    <table class="valign-table"><tr>
+      <td>
+        <label class="checkbox">
+          <input type="checkbox" checked /> Send 
+        </label>
+      </td>
+      <td>
+        <span>
+          <div class="well valign-remove-margins" style="margin-left: 20px">
+            <input type="text" value="5" class="input-mini" /> times per day <b>every day</b> between <select class="input-time-of-day"><option>7:00am</option></select> and <select class="input-time-of-day"><option>9:00am</option></select>                    <br />
+            <label class="checkbox inline"><input type="checkbox" name="monday1" checked /> Mon</label>
+            <label class="checkbox inline"><input type="checkbox" name="tuesday1" checked /> Tue</label>
+            <label class="checkbox inline"><input type="checkbox" name="wednesday1" checked /> Wed</label>
+            <label class="checkbox inline"><input type="checkbox" name="thursday1" checked /> Thu</label>
+            <label class="checkbox inline"><input type="checkbox" name="friday1" checked /> Fri</label>
+            <label class="checkbox inline"><input type="checkbox" name="saturday1" checked /> Sat</label>
+            <label class="checkbox inline"><input type="checkbox" name="sundat1" checked /> Sun</label>
+          </div>
+        </span>
+      </td>
+    </tr></table>
+    <table class="valign-table"><tr>
+      <td>
+        <label class="checkbox">
+          <input type="checkbox" /> Send 
+        </label>
+      </td>
+      <td>
+        <span>
+          <div class="well valign-remove-margins muted" style="margin-left: 20px">
+            <input type="text" value="5" class="input-mini" /> times per day <b>every day</b> between <select class="input-time-of-day"><option>5:30pm</option></select> and <select class="input-time-of-day"><option>Midnight</option></select>                    <br />
+            <label class="checkbox inline"><input type="checkbox" name="monday2" checked /> Mon</label>
+            <label class="checkbox inline"><input type="checkbox" name="tuesday2" checked /> Tue</label>
+            <label class="checkbox inline"><input type="checkbox" name="wednesday2" checked /> Wed</label>
+            <label class="checkbox inline"><input type="checkbox" name="thursday2" checked /> Thu</label>
+            <label class="checkbox inline"><input type="checkbox" name="friday2" checked /> Fri</label>
+            <label class="checkbox inline"><input type="checkbox" name="saturday2" checked /> Sat</label>
+            <label class="checkbox inline"><input type="checkbox" name="sundat2" checked /> Sun</label>
+          </div>
+        </span>
+      </td>
+    </tr></table>
+  </div>
+  
+  <div class="well">
+    Message: <input type="text" class="input-block-level" value="How curious are you right now on a scale of 0-10?"/><br />
+    <table class="valign-table"><tr>
+      <td>
+        <label class="checkbox">
+          <input type="checkbox" checked /> Send 
+        </label>
+      </td>
+      <td>
+        <span>
+          <div class="well valign-remove-margins" style="margin-left: 20px">
+            <input type="text" value="5" class="input-mini" /> times per day <b>every day</b> between <select class="input-time-of-day"><option>7:00am</option></select> and <select class="input-time-of-day"><option>9:00am</option></select>                    <br />
+            <label class="checkbox inline"><input type="checkbox" name="monday1" checked /> Mon</label>
+            <label class="checkbox inline"><input type="checkbox" name="tuesday1" checked /> Tue</label>
+            <label class="checkbox inline"><input type="checkbox" name="wednesday1" checked /> Wed</label>
+            <label class="checkbox inline"><input type="checkbox" name="thursday1" checked /> Thu</label>
+            <label class="checkbox inline"><input type="checkbox" name="friday1" checked /> Fri</label>
+            <label class="checkbox inline"><input type="checkbox" name="saturday1" checked /> Sat</label>
+            <label class="checkbox inline"><input type="checkbox" name="sundat1" checked /> Sun</label>
+          </div>
+        </span>
+      </td>
+    </tr></table>
+    <table class="valign-table"><tr>
+      <td>
+        <label class="checkbox">
+          <input type="checkbox" /> Send 
+        </label>
+      </td>
+      <td>
+        <span>
+          <div class="well valign-remove-margins muted" style="margin-left: 20px">
+            <input type="text" value="5" class="input-mini" /> times per day <b>every day</b> between <select class="input-time-of-day"><option>5:30pm</option></select> and <select class="input-time-of-day"><option>Midnight</option></select>                    <br />
+            <label class="checkbox inline"><input type="checkbox" name="monday2" checked /> Mon</label>2
+            <label class="checkbox inline"><input type="checkbox" name="tuesday2" checked /> Tue</label>
+            <label class="checkbox inline"><input type="checkbox" name="wednesday2" checked /> Wed</label>
+            <label class="checkbox inline"><input type="checkbox" name="thursday2" checked /> Thu</label>
+            <label class="checkbox inline"><input type="checkbox" name="friday2" checked /> Fri</label>
+            <label class="checkbox inline"><input type="checkbox" name="saturday2" checked /> Sat</label>
+            <label class="checkbox inline"><input type="checkbox" name="sundat2" checked /> Sun</label>
+          </div>
+        </span>
+      </td>
+    </tr></table>
+  </div>
+  
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <button type="button" class="btn">Cancel</button>
+  </div>
+</form>
