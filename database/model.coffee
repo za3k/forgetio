@@ -53,8 +53,9 @@ ReminderTime = define('ReminderTime', {
     end:{ type:Sequelize.INTEGER, allowNull:false }
     frequency:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 }
     days:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 } # flag field where    1:sun 2:mon 4:tue 8:wed 16:thur 32:fri 64:sat
+},{
     instanceMethods: {
-        getDays:()->return [(@days&1)==1,(@days&2)==2,(@days&4)==4,(@days&8)==8,(@days&16)==16,(@days&32)==32,(@days&64)==64]
+        getDays:()->[(@days&1)==1,(@days&2)==2,(@days&4)==4,(@days&8)==8,(@days&16)==16,(@days&32)==32,(@days&64)==64]
         setDays:(d)->@days=(d[0]&&1||0)|(d[1]&&2||0)|(d[2]&&4||0)|(d[3]&&8||0)|(d[4]&&16||0)|(d[5]&&32||0)|(d[6]&&64||0)
     }
 })

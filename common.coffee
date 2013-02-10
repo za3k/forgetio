@@ -16,6 +16,6 @@ module.exports.nconf = nconf
 
 # setup logger
 logger = require('winston')
-logger.add(logger.transports.File, { filename: nconf.get('logFile'), handleExceptions:true, exitOnError: false })
+logger.add(logger.transports.File, { filename: nconf.get('logFile'), handleExceptions:!nconf.get('debug'), exitOnError: false })
 logger.debug('Logger Initialized!')
 module.exports.logger = logger
