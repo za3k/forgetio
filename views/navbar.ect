@@ -1,0 +1,24 @@
+<div class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="#"><%- @appname %></a>
+    <ul class="nav">
+      <% for entry in [{page: 'Home', text: 'Home', path:'/'},
+                       {page: 'Account', text: 'My Account', path: '/account.html'},
+                       {page: 'Scheduled', text: 'Repeating Messages', path: '/scheduled.html'},
+                       {page: 'Results', text: 'Results', path: '/results.html'}
+                       ] : %>
+        <li<% if entry.page == @selected : %> class="active"<% end %>>
+          <a href="<%- entry.path %>"><%- entry.text %></a>
+        </li>
+      <% end %>
+      <% if not @user : %>
+        <li class="divider-vertical"></li>
+        <% for entry in [{page: 'Signup', text: 'Sign up', path:'/signup.html'}] : %>
+          <li<% if entry.page == @selected : %> class="active"<% end %>>
+            <a href="<%- entry.path %>"><%- entry.text %></a>
+          </li>
+        <% end %>
+      <% end %>
+    </ul>
+  </div>
+</div>
