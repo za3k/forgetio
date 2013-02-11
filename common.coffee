@@ -1,6 +1,10 @@
 # patch Date object to support time zones
 require('time')(Date)
 
+# some util methods
+_ = require 'underscore'
+module.exports.flatten = _.flatten
+
 # load config
 nconf = require('nconf')
 nconf.env().argv() # process.env and process.argv

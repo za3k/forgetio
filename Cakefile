@@ -24,9 +24,7 @@ createDbCreateSteps= ()->
     return [
         (step, err)->handle(model.sequelize.sync({force:true}), step.next)
         (step, err)->logger.debug('Created tables!'); step.next()
-        (step, err)->handle(model.sequelize.getQueryInterface().removeColumn('Reminders', 'id'), step.next)
-        (step, err)->handle(model.sequelize.getQueryInterface().addColumn('Reminders', 'id', {type:model.Sequelize.INTEGER, allowNull:false, autoIncrement:true}), step.next)
-        (step, err)->handle(model.sequelize.getQueryInterface().addIndex('Reminders',['id','version'], {indicesType:'UNIQUE'}), step.next)
+        (step, err)->handle(model.sequelize.getQueryInterface().addIndex('Reminders',['parentId','version'], {indicesType:'UNIQUE'}), step.next)
         (step, err)->logger.debug('Modified tables!'); step.next()
         (step, err)->require('./database/queries/createTimeZones').run({}, step.next)
         (step, err)->logger.debug('Inserted data!'); step.next()

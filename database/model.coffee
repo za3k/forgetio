@@ -42,10 +42,11 @@ UserRole = define('UserRole', {
 })
     
 Reminder = define('Reminder', {
-    id:{ type: Sequelize.INTEGER, allowNull: false }
-    version:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0}
+    id:defaultID
+    parentId:{type:Sequelize.INTEGER, allowNull:true, defaultValue:null }
+    version:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 }
     message:{ type:Sequelize.STRING, allowNull:false, defaultValue:"" }
-    enabled:{ type:Sequelize.BOOLEAN, allowNull:false, defaultValue:true}
+    enabled:{ type:Sequelize.BOOLEAN, allowNull:false, defaultValue:true }
 })
 
 ReminderTime = define('ReminderTime', {
