@@ -96,7 +96,7 @@ exports.runTran = (steps, callback=()->)->
                 step.next()
     rollback = (err)->
         logger.error("Error in transaction... rolling back. Message:'#{steps[currStep].errMsg}'", err)
-        funcflow(createRollbackStep(steps[i]) for i in [currStep-1..0], callback)
+        funcflow(createRollbackStep(steps[i]) for i in [currStep-1..0], (step, e)->callback(step, err))
     createRunStep = (index, stepFunc)->
         (step,err)->
             if err 
@@ -132,5 +132,5 @@ ssss = exports.createSaveReminderTran({
         days: 31 # there are utility methods getDays and setDays on model.ReminderTime which make setting this value easier
     }]
 })
-exports.runTran(ssss)
+exports.runTran(ssss, ()->console.log(arguments))
 ###
