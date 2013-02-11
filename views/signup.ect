@@ -1,49 +1,40 @@
 <% extend 'layout.ect' %>
-<form class="form-horizontal">
+<form class="form-horizontal" method="post" action="/signup.html">
   <div class="control-group">
     <label class="control-label" for="name">Name</label>
     <div class="controls">
-      <input type="text" id="name" placeholder="John Smith" name="name">
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="phone">Phone</label>
-    <div class="controls">
-      <input type="text" id="phone" placeholder="555-555-5555" name="phone">
+      <input class="span6" type="text" id="name" placeholder="John Smith" name="name" 
+        value="<%= if @name? then @name else ""  %>">
     </div>
   </div>
   <div class="control-group">
     <label class="control-label" for="timezone">Timezone</label>
     <div class="controls">
-      <select name="DropDownTimezone" id="DropDownTimezone" class="span6" name="timezone">
+      <select class="span6" name="TimeZoneId" id="TimeZoneId" class="span6" name="timezone">
+        <option value="" <%= if !@TimeZoneId? then "selected" %>></option>
       <% for tz in @timezones : %>
-        <option value="<%= tz.id %>"><%= tz.text %></option>
+        <option value="<%= tz.id %>" <%= if @TimeZoneId?.toString() == tz.id.toString() then "selected" %> ><%= tz.text %></option>
       <% end %>
       </select>          
     </div>
   </div>
   <div class="control-group">
-    <label class="control-label" for="email">Email address</label>
+    <label class="control-label" for="email">Email</label>
     <div class="controls">
-      <input type="text" id="email" placeholder="fake@example.com" name="email">
+      <input class="span6" type="text" id="email" placeholder="fake@example.com" name="email"
+        value="<%= if @email? then @email else ""  %>">
     </div>
   </div>
   <div class="control-group">
-    <label class="control-label" for="username">Username</label>
+    <label class="control-label" for="password">Password</label>
     <div class="controls">
-      <input type="text" id="username" name="username">
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="pasword">Password</label>
-    <div class="controls">
-      <input type="password" id="password" name="password">
+      <input class="span6" type="password" id="password" name="password"
+        value="<%= if @password? then @password else ""  %>">
     </div>
   </div>
   <div class="control-group">
     <div class="controls">
-      <button type="submit" class="btn btn-primary">Register</button>
-      <button type="button" class="btn">Cancel</button>
+      <button type="submit" class="btn btn-primary span2 offset3">Register</button>
     </div>
   </div>
 </form>

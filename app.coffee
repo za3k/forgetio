@@ -42,6 +42,7 @@ app.get('/account.html', routes.account)
 app.get('/scheduled.html', routes.scheduled)
 app.get('/results.html', routes.results)
 app.get('/signup.html', routes.signup)
+app.post('/signup.html', routes.signupPost)
 logger.debug('Routes Configured!')
 
 http.createServer(app).listen(nconf.get("httpPort"), ()->

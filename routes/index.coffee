@@ -1,5 +1,9 @@
 #!/usr/bin/env coffee
 model = require('../database/model')
+common = require('../common')
+check = require('validator').check
+sanitize = require('validator').sanitize
+funcflow = require('funcflow')
 shared = {}
 model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
     offset_formatter = (offset, text) ->
@@ -31,12 +35,53 @@ exports.account = (req, res) ->
     page: 'Account'
     timezones: shared.timezones
   })
-
-exports.signup = (req, res) ->
-  res.render('signup.ect', { 
-    page: 'Signup'
-    timezones: shared.timezones
-  })
+signup = (req, res, data={})->
+    res.render('signup.ect', common.extend({ 
+        page: 'Signup'
+        timezones: shared.timezones}, data))
+exports.signup=(req, res)->signup(req,res)
+exports.signupPost = (req, res) ->
+    json = req.body
+    steps = [(step,err)->
+        # validate the data
+        check(json.name, 'Name is required!').len(4,255)
+        check(json.TimeZoneId, 'Timezone is invalid!').isInt()
+        check(json.email, 'Email is invalid!').len(4,255).isEmail()
+        check(json.password, 'Password must be at least 8 characters!').len(8,255)
+        # sanitize the data
+        json.email = sanitize(json.email.toLowerCase()).trim()
+        require('password-hash').generate(sanitize(json.password.toLowerCase()).trim())
+        json.name = sanitize(json.name).trim()
+        json.TimeZoneId = sanitize(json.TimeZoneId).toInt()
+        step.next()
+    (step,err)->
+        if err then step.errorHandler(err); return
+        # check if email already exists
+        model.User.find({where:{email:json.email}})
+            .success(step.next)
+            .error((err)->
+                common.logger.error("Error retrieving user by email", err)
+                step.errorHandler({message:"There was a server error!"}))
+    (step,err,user)->
+        if user? then step.errorHandler({message:"A user with that email already exists!"}); return
+        # save the new user!
+        user = model.User.build(json)
+        console.dir(user)
+        user.save()
+            .success(()->step.next(user))
+            .error((err)->
+                common.logger.error("Error saving user", err)
+                step.errorHandler({message:"There was a server error!"}))
+    (step,err,user)->
+        console.log user
+        # TODO: log the user in!
+        step.next()
+    ]
+    errorHandler = (error)->
+        delete json.password
+        json.errorMsg =  if error?.message? then error.message else error.toString()
+        signup(req, res, json)
+    funcflow(steps, {errorHandler:errorHandler},()->res.redirect('/scheduled.html'))
 
 exports.scheduled = (req, res) ->
   res.render('scheduled.ect', { 

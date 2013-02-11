@@ -35,8 +35,10 @@ Phone = define('Phone', {
 
 User = define('User', {
     id:defaultID
-    credit:{ type:Sequelize.INTEGER, allowNull:false } # in messages
-    name:{ type:Sequelize.STRING, allowNull:false } 
+    credit:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0} # in messages
+    name:{ type:Sequelize.STRING }
+    email:{ type:Sequelize.STRING, allowNull:false}
+    password:{ type:Sequelize.STRING, allowNull:false }
 })
 
 UserRole = define('UserRole', {
