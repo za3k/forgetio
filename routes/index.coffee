@@ -2,10 +2,26 @@
 model = require('../database/model')
 shared = {}
 model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
-    timezones = (db_time.values for db_time in db_times)
+    offset_formatter = (offset, text) ->
+        if offset == 0
+            text
+        else if (offset % 1) == 0
+            hours = offset
+            minutes = "00"
+            "(UTC #{ hours }:#{ minutes }) #{ text }"
+        else
+            hours = Math.floor(offset) if offset > 0
+            hours = Math.ceil(offset) if offset < 0
+            minutes = "30"
+            "(UTC #{ hours }:#{ minutes }) #{ text }"
+    timezones = ({
+        id: db_time.id
+        text: offset_formatter db_time.offset, db_time.text
+    } for db_time in db_times)
     
     shared.timezones = timezones
 )
+
 
 exports.index = (req, res) ->
   res.render('home.ect', { page: 'Home' })
@@ -14,22 +30,13 @@ exports.account = (req, res) ->
   res.render('account.ect', {
     page: 'Account'
     timezones: shared.timezones
-    offset_formatter: (offset) ->
-        if offset == 0
-            "" 
-        else if (offset % 1) == 0
-            hours = offset
-            minutes = "00"
-            "(UTC #{ hours }:#{ minutes }) "
-        else
-            hours = Math.floor(offset) if offset > 0
-            hours = Math.ceil(offset) if offset < 0
-            minutes = "30"
-            "(UTC #{ hours }:#{ minutes }) "
   })
 
 exports.signup = (req, res) ->
-  res.render('signup.ect', { page: 'Signup' })
+  res.render('signup.ect', { 
+    page: 'Signup'
+    timezones: shared.timezones
+  })
 
 exports.scheduled = (req, res) ->
   res.render('scheduled.ect', { 

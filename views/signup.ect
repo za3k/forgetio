@@ -1,2 +1,49 @@
 <% extend 'layout.ect' %>
-Sign up page
+<form class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label" for="name">Name</label>
+    <div class="controls">
+      <input type="text" id="name" placeholder="John Smith" name="name">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="phone">Phone</label>
+    <div class="controls">
+      <input type="text" id="phone" placeholder="555-555-5555" name="phone">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="timezone">Timezone</label>
+    <div class="controls">
+      <select name="DropDownTimezone" id="DropDownTimezone" class="span6" name="timezone">
+      <% for tz in @timezones : %>
+        <option value="<%= tz.id %>"><%= tz.text %></option>
+      <% end %>
+      </select>          
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="email">Email address</label>
+    <div class="controls">
+      <input type="text" id="email" placeholder="fake@example.com" name="email">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="username">Username</label>
+    <div class="controls">
+      <input type="text" id="username" name="username">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="pasword">Password</label>
+    <div class="controls">
+      <input type="password" id="password" name="password">
+    </div>
+  </div>
+  <div class="control-group">
+    <div class="controls">
+      <button type="submit" class="btn btn-primary">Register</button>
+      <button type="button" class="btn">Cancel</button>
+    </div>
+  </div>
+</form>

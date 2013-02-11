@@ -28,8 +28,9 @@
     <td>
       <select name="DropDownTimezone" id="DropDownTimezone" class="span4">
       <% for tz in @timezones : %>
-        <option value="<%= tz.id %>"><%= @offset_formatter tz.offset %><%= tz.text %></option>
+        <option value="<%= tz.id %>"><%= tz.text %></option>
       <% end %>
-</select>          
+      </select>          
+    </td>
   </tr>
 </table>
