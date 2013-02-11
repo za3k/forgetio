@@ -51,7 +51,6 @@ exports.createSaveReminderTran = (reminder)->
         rollback:(step)->savedReminder.destroy()
     },(createTimeStep(t) for t in reminder.times),{
         run:(step,err)->
-            throw 'fff'
             step.next(savedReminder)
     }])
 
