@@ -1,2 +1,52 @@
 <% extend 'layout.ect' %>
-Results page
+<div class="accordion" id="accordion1">
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
+        How happy are you on a scale of 0-10?
+      </a>
+    </div>
+    <div id="collapseOne" class="accordion-body collapse in">
+      <div class="accordion-inner">
+        <table class="table table-striped table-hover">
+          <thead>
+            <th>Date</th><th>Reply</th><th>Reply Time</th>
+          </thead>
+          <tbody>
+            <tr><td>Feb 1, 2013, 12:20pm</td><td>7</td><td>Feb 1 2013, 12:21pm</td></tr>
+            <tr><td>Jan 31, 2013, 8:44am</td><td>6</td><td>Jan 31, 2013, 8:44pm</td></tr>
+            <tr><td>Jan 31, 2013, 2:30am</td><td>-</td><td>-</td></tr>
+            <tr><td>Jan 31, 2013, 11:16pm</td><td>-</td><td>-</td></tr>
+            <tr><td>Jan 30, 2013, 9:14pm</td><td>3, this is annoying</td><td>Jan 30, 2013, 9:14pm</td></tr>
+            <tr><td>Jan 30, 2013, 5:54pm</td><td>8</td><td>Jan 30, 2013, 5:56pm</td></tr>
+          </tbody>
+        </table>
+        <a href="#fakelink" class="pull-right">CSV Export</a>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion1" href="#collapseTwo">
+        How curious are you on a scale of 0-10?
+      </a>
+    </div>
+    <div id="collapseTwo" class="accordion-body collapse">
+      <div class="accordion-inner">
+        <table class="table table-striped table-hover">
+          <thead>
+            <th>Date</th><th>Reply</th><th>Reply Time</th>
+          </thead>
+          <tbody>
+            <tr><td>Feb 1, 2013, 12:20pm</td><td>7</td><td>Feb 1 2013, 12:21pm</td></tr>
+            <tr><td>Jan 31, 2013, 8:44am</td><td>6</td><td>Jan 31, 2013, 8:44pm</td></tr>
+            <tr><td>Jan 31, 2013, 2:30am</td><td>-</td><td>-</td></tr>
+            <tr><td>Jan 31, 2013, 11:16pm</td><td>-</td><td>-</td></tr>
+            <tr><td>Jan 30, 2013, 9:14pm</td><td>3, this is annoying</td><td>Jan 30, 2013, 9:14pm</td></tr>
+            <tr><td>Jan 30, 2013, 5:54pm</td><td>8</td><td>Jan 30, 2013, 5:56pm</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
