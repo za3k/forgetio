@@ -73,8 +73,8 @@ exports.signupPost = (req, res) ->
                 common.logger.error("Error saving user", err)
                 step.errorHandler({message:"There was a server error!"}))
     (step,err,user)->
-        console.log user
-        # TODO: log the user in!
+        # log the user in!
+        req.session.UserId = user.id
         step.next()
     ]
     errorHandler = (error)->
