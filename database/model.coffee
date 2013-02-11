@@ -11,6 +11,8 @@ sequelize = new Sequelize('notify','postgres','brinksucksballs', {
     dialect:'postgres'
     logging:logger.debug
     omitNull:true
+    define:{
+    }
 })
 extern("Sequelize",Sequelize)
 extern("sequelize",sequelize)

@@ -4,6 +4,7 @@ require('time')(Date)
 # some util methods
 _ = require 'underscore'
 module.exports.flatten = _.flatten
+module.exports.extend = _.extend
 
 # load config
 nconf = require('nconf')
