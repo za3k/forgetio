@@ -1,3 +1,59 @@
+model = require('./model')
+common = require('../common')
+logger = common.logger
+funcflow = require('funcflow')
+
+### example of reminder for this query
+{
+    UserId:0
+    version:0
+    message:'some message'
+    enabled:true
+    id:undefined   # its a new recode
+    phone:'+15553121238'
+    times:[{
+        start:0 # seconds since 12am... in this case 12am
+        end:60*60*8 # seconds since 12am... in this case 8 am
+        frequency: 5
+        days: 31 # there are utility methods getDays and setDays on model.ReminderTime which make setting this value easier
+    },{
+        start:60*60*1 # seconds since 12am... in this case 1 am
+        end:60*60*8 # seconds since 12am... in this case 8 am
+        frequency: 5
+        days: 31 # there are utility methods getDays and setDays on model.ReminderTime which make setting this value easier
+    }]
+}
+###
+exports.createSaveReminderTran = (reminder)->
+    if reminder.id?
+        reminder.version++
+        if not reminder.parentId? then reminder.parentId = reminder.id
+    savedReminder = null
+    createTimeStep = (time)->
+        return {
+            errMsg:"Could not create ReminderTime"
+            run:(step)->
+                @time = model.ReminderTime.build(time)
+                @time.ReminderId = savedReminder.id
+                @time.save()
+            rollback:(step)->@time.destroy()
+        }
+    return common.flatten([
+        exports.createSavePhoneTran({number:reminder.phone}),
+    {
+        errMsg:"Could not save Reminder"
+        run:(step,err,phone)->
+            savedReminder = model.Reminder.build(if reminder.values? then reminder.values else reminder)
+            savedReminder.PhoneId = phone.id
+            delete savedReminder.phone
+            delete savedReminder.times
+            savedReminder.save()
+        rollback:(step)->savedReminder.destroy()
+    },(createTimeStep(t) for t in reminder.times),{
+        run:(step,err)->
+            step.next(savedReminder)
+    }])
+
 ### example of reminder for this query
 {
     id:undefined # new number
@@ -6,12 +62,7 @@
     confirmedDate:null # not confirmed
 }
 ###
-
-model = require('./model')
-common = require('../common')
-logger = common.logger
-funcflow = require('funcflow')
-exports.createTran = (phone)->
+exports.createSavePhoneTran = (phone)->
     if phone.values? then phone = phone.values
     return [{
         errMsg:"Call to see if phone number already exists failed!"
@@ -31,6 +82,7 @@ exports.createTran = (phone)->
     }]
     
 exports.runTran = (steps, callback=()->)->
+    steps.push (step,err)->step.next() # add one final step so we do not have to wrap callback
     currStep = 0
     createRollbackStep = (stepFunc)->
         (step,err)->
@@ -44,10 +96,12 @@ exports.runTran = (steps, callback=()->)->
                 step.next()
     rollback = (err)->
         logger.error("Error in transaction... rolling back. Message:'#{steps[currStep].errMsg}'", err)
-        funcflow(createRollbackStep(steps[i]) for i in [currStep-1..0] by 1, callback)
+        funcflow(createRollbackStep(steps[i]) for i in [currStep-1..0], callback)
     createRunStep = (index, stepFunc)->
         (step,err)->
-            if err then rollback(err)
+            if err 
+                rollback(err)
+                return
             currStep = index
             if stepFunc.run?
                 res = stepFunc.run.apply(stepFunc, arguments)
@@ -56,8 +110,27 @@ exports.runTran = (steps, callback=()->)->
                     res.on("error",(err)->throw err)
             else
                 step.next()
-    funcflow((createRunStep(i, steps[i]) for i in [0...steps.length]), {catchExceptions:false}, callback)
-    
-t = exports.createTran({UserId:0, number:'+5559484958'})
-exports.runTran(t)
-        
+    funcflow((createRunStep(i, steps[i]) for i in [0...steps.length]),{}, callback)
+
+###
+ssss = exports.createSaveReminderTran({
+    UserId:0
+    version:0
+    message:'some message'
+    enabled:true
+    id:undefined   # its a new recode
+    phone:'+15553121238'
+    times:[{
+        start:0 # seconds since 12am... in this case 12am
+        end:60*60*8 # seconds since 12am... in this case 8 am
+        frequency: 5
+        days: 31 # there are utility methods getDays and setDays on model.ReminderTime which make setting this value easier
+    },{
+        start:60*60*1 # seconds since 12am... in this case 1 am
+        end:60*60*8 # seconds since 12am... in this case 8 am
+        frequency: 5
+        days: 31 # there are utility methods getDays and setDays on model.ReminderTime which make setting this value easier
+    }]
+})
+exports.runTran(ssss)
+###
