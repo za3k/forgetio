@@ -28,6 +28,7 @@ exports.createSaveReminderTran = (reminder)->
     if reminder.id?
         reminder.version++
         if not reminder.parentId? then reminder.parentId = reminder.id
+        delete reminder.id
     savedReminder = null
     createTimeStep = (time)->
         return {
@@ -38,9 +39,18 @@ exports.createSaveReminderTran = (reminder)->
                 @time.save()
             rollback:(step)->@time.destroy()
         }
-    return common.flatten([
-        exports.createSavePhoneTran({number:reminder.phone}),
-    {
+    return common.flatten([{
+        errMsg:"Call to see if user owns reminder failed!"
+        run:(step,err)->
+            if not reminder.parentId? then step.next(); return
+            model.Reminder.find({where:{id:reminder.parentId}})
+    },{
+        run:(step,err, rem)->
+            if reminder.parentId? and (not rem? or rem.UserId != reminder.UserId)
+                console.log reminder.parentId
+                throw "User does not own the reminder they are trying to save!"
+            step.next()
+    },exports.createSavePhoneTran({number:reminder.phone}),{
         errMsg:"Could not save Reminder"
         run:(step,err,phone)->
             savedReminder = model.Reminder.build(if reminder.values? then reminder.values else reminder)
@@ -112,7 +122,6 @@ exports.runTran = (steps, callback=()->)->
                 step.next()
     funcflow((createRunStep(i, steps[i]) for i in [0...steps.length]),{}, callback)
 
-###
 ssss = exports.createSaveReminderTran({
     UserId:0
     version:0
@@ -133,4 +142,4 @@ ssss = exports.createSaveReminderTran({
     }]
 })
 exports.runTran(ssss, ()->console.log(arguments))
-###
+
