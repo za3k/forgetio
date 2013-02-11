@@ -27,7 +27,9 @@
     <td>Time zone</td>
     <td>
       <select name="DropDownTimezone" id="DropDownTimezone" class="span4">
-<option value="-12.0">(GMT -12:00) Eniwetok, Kwajalein</option>
+      <% for tz in @timezones : %>
+        <option value="<%= tz.id %>"><%= @offset_formatter tz.offset %><%= tz.text %></option>
+      <% end %>
 </select>          
   </tr>
 </table>
