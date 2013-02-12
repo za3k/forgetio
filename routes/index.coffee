@@ -36,6 +36,9 @@ exports.logout=(req,res)->
 
 exports.index = (req, res) ->
   res.render('home.ect', { page: 'Home', req:req })
+  
+exports.login = (req,res) ->
+    res.render('home.ect', { page: 'Login', req:req })
 
 exports.account = (req, res) ->
   res.render('account.ect', {

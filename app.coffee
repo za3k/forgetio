@@ -49,7 +49,7 @@ logger.debug('App Configured!')
 
 app.get('/', routes.index)
 app.get('/index.html', routes.index)
-app.get('/login.html', routes.index)
+app.get('/login.html', routes.login)
 app.get('/signup.html', routes.signup)
 app.post('/signup.html', routes.signupPost)
 app.all('*', routes.ensureLogin) # everything below this requires login

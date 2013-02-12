@@ -7,14 +7,17 @@
                        {page: 'Scheduled', text: 'Repeating Messages', path: '/scheduled.html', signedIn:true}
                        {page: 'Results', text: 'Results', path: '/results.html', signedIn:true}
                        {page: '|'}
-                       {page: 'Signup', text:'Sign up', path:'/signup.html', signedIn:false}
                        {page: 'Logout', text:'Logout', path:'/logout.html', signedIn:true}
+                       {page: 'Login', text:'Login', path:'/login.html', signedIn:false}
+                       {page: 'Signup', text:'Sign up', path:'/signup.html', signedIn:false}
                        ] : %>
         <% console.log this %>
-        <% if !entry.signedIn? or entry.signedIn == true && @req.user.loggedIn() or entry.signedIn == false && !@req.user.loggedIn() : %>
-        <li<% if entry.page == @page : %> class="active"<% end %>>
-          <a href="<%- entry.path %>"><%- entry.text %></a>
-        </li>
+        <% if entry.page == '|' : %>
+          <li class="divider-vertical"></li>
+        <% else if !entry.signedIn? or entry.signedIn == true && @req.user.loggedIn() or entry.signedIn == false && !@req.user.loggedIn() : %>
+          <li<% if entry.page == @page : %> class="active"<% end %>>
+            <a href="<%- entry.path %>"><%- entry.text %></a>
+          </li>
         <% end %>
       <% end %>
     </ul>
