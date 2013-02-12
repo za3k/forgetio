@@ -8,6 +8,16 @@ common = require('./common')
 nconf = common.nconf
 logger = common.logger
 
+# define some simple middleware
+loginUtilMiddleware = (req, res, next)->
+    req.user = {
+        login:(userId)->req.session.UserId = userId
+        logout:()->req.session=null
+        loggedIn:()->req.session?.UserId?
+        userId:()->req.session?.UserId
+    }        
+    next()
+
 # create app
 app = express()
 ectRenderer = ect({ watch: nconf.get("debug"), root: __dirname + '/views' })
@@ -24,6 +34,7 @@ app.configure(()->
     app.use(express.methodOverride())
     app.use(express.cookieParser('braSP8pUpR5XuDapHAT9e87ecHUtHufr'))
     app.use(express.cookieSession({cookie: { maxAge: 60 * 60 * 1000 }}))
+    app.use(loginUtilMiddleware)
     app.use(app.router)
     app.use(express.static(path.join(__dirname, 'public')))
     app.use((err, req, res, next)-> # Handle any unhandled errors
@@ -38,11 +49,14 @@ logger.debug('App Configured!')
 
 app.get('/', routes.index)
 app.get('/index.html', routes.index)
+app.get('/login.html', routes.index)
+app.get('/signup.html', routes.signup)
+app.post('/signup.html', routes.signupPost)
+app.all('*', routes.ensureLogin) # everything below this requires login
 app.get('/account.html', routes.account)
 app.get('/scheduled.html', routes.scheduled)
 app.get('/results.html', routes.results)
-app.get('/signup.html', routes.signup)
-app.post('/signup.html', routes.signupPost)
+app.get('/logout.html', routes.logout)
 logger.debug('Routes Configured!')
 
 http.createServer(app).listen(nconf.get("httpPort"), ()->

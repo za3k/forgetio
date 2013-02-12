@@ -26,18 +26,27 @@ model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
     shared.timezones = timezones
 )
 
+exports.ensureLogin=(req, res, next)->
+    if req.user.loggedIn() then next()
+    else res.redirect('/login.html')
+    
+exports.logout=(req,res)->
+    req.user.logout()
+    res.redirect('/login.html')
 
 exports.index = (req, res) ->
-  res.render('home.ect', { page: 'Home' })
+  res.render('home.ect', { page: 'Home', req:req })
 
 exports.account = (req, res) ->
   res.render('account.ect', {
     page: 'Account'
     timezones: shared.timezones
+    req:req
   })
 signup = (req, res, data={})->
     res.render('signup.ect', common.extend({ 
         page: 'Signup'
+        req:req
         timezones: shared.timezones}, data))
 exports.signup=(req, res)->signup(req,res)
 exports.signupPost = (req, res) ->
@@ -85,6 +94,7 @@ exports.signupPost = (req, res) ->
 
 exports.scheduled = (req, res) ->
   res.render('scheduled.ect', { 
+    req:req
     page: 'Scheduled' 
     daysOfWeek: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     timesOfDay: [
@@ -152,4 +162,4 @@ exports.scheduled = (req, res) ->
   })
 
 exports.results = (req, res) ->
-  res.render('results.ect', { page: 'Results' })
+  res.render('results.ect', { page: 'Results', req:req })

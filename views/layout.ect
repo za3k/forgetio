@@ -8,7 +8,7 @@
         <title><%- @appname %> - <%- @page %></title>
     </head>
     <body>
-        <% include 'navbar.ect', {selected: @page} %>
+        <% include 'navbar.ect', this %>
         <% for type in ["error","info","success"] : %>
             <% if this[type+"Msg"]? : %>
                 <div class="alert alert-<%= type %> span10 offset1">

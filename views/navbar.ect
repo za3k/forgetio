@@ -2,21 +2,19 @@
   <div class="navbar-inner">
     <a class="brand" href="#"><%- @appname %></a>
     <ul class="nav">
-      <% for entry in [{page: 'Home', text: 'Home', path:'/'},
-                       {page: 'Account', text: 'My Account', path: '/account.html'},
-                       {page: 'Scheduled', text: 'Repeating Messages', path: '/scheduled.html'},
-                       {page: 'Results', text: 'Results', path: '/results.html'}
+      <% for entry in [{page: 'Home', text: 'Home', path:'/'}
+                       {page: 'Account', text: 'My Account', path: '/account.html', signedIn:true}
+                       {page: 'Scheduled', text: 'Repeating Messages', path: '/scheduled.html', signedIn:true}
+                       {page: 'Results', text: 'Results', path: '/results.html', signedIn:true}
+                       {page: '|'}
+                       {page: 'Signup', text:'Sign up', path:'/signup.html', signedIn:false}
+                       {page: 'Logout', text:'Logout', path:'/logout.html', signedIn:true}
                        ] : %>
-        <li<% if entry.page == @selected : %> class="active"<% end %>>
+        <% console.log this %>
+        <% if !entry.signedIn? or entry.signedIn == true && @req.user.loggedIn() or entry.signedIn == false && !@req.user.loggedIn() : %>
+        <li<% if entry.page == @page : %> class="active"<% end %>>
           <a href="<%- entry.path %>"><%- entry.text %></a>
         </li>
-      <% end %>
-      <% if not @user : %>
-        <li class="divider-vertical"></li>
-        <% for entry in [{page: 'Signup', text: 'Sign up', path:'/signup.html'}] : %>
-          <li<% if entry.page == @selected : %> class="active"<% end %>>
-            <a href="<%- entry.path %>"><%- entry.text %></a>
-          </li>
         <% end %>
       <% end %>
     </ul>
