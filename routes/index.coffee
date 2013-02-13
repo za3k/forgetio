@@ -26,6 +26,9 @@ model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
     shared.timezones = timezones
 )
 
+getUser = (req) ->
+    model.User.find({where: {id: req.session?.UserId}})
+
 exports.ensureLogin=(req, res, next)->
     if req.user.loggedIn() then next()
     else res.redirect('/login.html')
@@ -40,14 +43,73 @@ exports.index = (req, res) ->
 exports.login = (req,res) ->
     res.render('home.ect', { page: 'Login', req:req })
 
-exports.account = (req, res) ->
-  res.render('account.ect', {
-    page: 'Account'
-    timezones: shared.timezones
-    req:req
-  })
+exports.account = (req, res, data) ->
+  getUser(req).success((u) ->
+      res.render('account.ect', common.extend({
+        page: 'Account'
+        timezones: shared.timezones
+        req:req
+        user: {
+          messagesReceived: 5 #TODO
+          messagesSent: 20
+          timezone: u.TimeZoneId
+          name: u.name
+          credits: u.credit
+          email: u.email
+          lowerTimeEstimate: u.credit / 10
+          upperTimeEstimate: u.credit / 5
+        }
+        warningLevel: (daysLeft) ->
+            if daysLeft == 0
+                "alert alert-error"
+            else if 1 < daysLeft < 7
+                "alert"
+            else if 7 < daysLeft
+                "alert alert-info"
+      }, data))
+  ).failure((err) ->
+      console.log(err)
+      res.render('account.ect', {
+        errMsg: "User not found. Please log in."
+      })
+    )
+exports.accountPost = (req, res) ->
+    json = req.body
+    steps = [(step, err)->
+      getUser(req).success((user)->
+        if !user?
+          common.logger.error("User does not exist", err)
+          step.errorHandler({message:"There was a server error!"})
+        else
+          step.next(user)
+      ).failure((err)->
+        common.logger.error("Error saving user's timezone", err)
+        step.errorHandler({message:"There was a server error!"}))
+    (step, err, user)->
+      if err then step.errorHandler(err); return
+      if json.timezone == user.TimeZoneId
+        exports.account(req, res)
+      check(json.timezone, 'Timezone is invalid!').isInt()
+      step.next(user, sanitize(json.timezone).toInt())
+    (step, err, user, timezone)->
+      if err then step.errorHandler(err); return
+      user.TimeZoneId =  timezone
+      user.save().success(step.next).failure((err)->
+        common.logger.error("Error saving user's timezone", err)
+        step.errorHandler({message:"There was a server error!"}))
+    (step, err, user)->
+      if err then step.errorHandler(err); return
+      exports.account(req, res)
+      step.next()
+    ]
+    errorHandler = (error)->
+      json.errorMsg =  if error?.message? then error.message else error.toString()
+      common.logger.error(json.errorMsg)
+      exports.account(req, res, json)
+    funcflow(steps, {errorHandler:errorHandler},()->{})
+
 signup = (req, res, data={})->
-    res.render('signup.ect', common.extend({ 
+    res.render('signup.ect', common.extend({
         page: 'Signup'
         req:req
         timezones: shared.timezones}, data))
@@ -62,7 +124,7 @@ exports.signupPost = (req, res) ->
         check(json.password, 'Password must be at least 8 characters!').len(8,255)
         # sanitize the data
         json.email = sanitize(json.email.toLowerCase()).trim()
-        require('password-hash').generate(sanitize(json.password.toLowerCase()).trim())
+        json.password = require('password-hash').generate(sanitize(json.password.toLowerCase()).trim())
         json.name = sanitize(json.name).trim()
         json.TimeZoneId = sanitize(json.TimeZoneId).toInt()
         step.next()
@@ -94,6 +156,7 @@ exports.signupPost = (req, res) ->
         json.errorMsg =  if error?.message? then error.message else error.toString()
         signup(req, res, json)
     funcflow(steps, {errorHandler:errorHandler},()->res.redirect('/scheduled.html'))
+
 timesOfDay = (
     {
         value: v
