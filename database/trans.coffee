@@ -67,7 +67,7 @@ exports.createSaveReminderTran = (reminder)->
 ### example of reminder for this query
 {
     id:undefined # new number
-    numer:"+15554561738"
+    number:"+15554561738"
     UserId:3
     confirmedDate:null # not confirmed
 }
