@@ -94,34 +94,26 @@ exports.signupPost = (req, res) ->
         json.errorMsg =  if error?.message? then error.message else error.toString()
         signup(req, res, json)
     funcflow(steps, {errorHandler:errorHandler},()->res.redirect('/scheduled.html'))
-
+timesOfDay = (
+    {
+        value: v
+        text: if v in [0, 24]
+            "Midnight"
+        else if v == 12
+            "Noon"
+        else if v < 12
+            "#{v}:00am"
+        else
+            "#{v-12}:00pm"
+    } for v in [0..24]
+)
 exports.scheduled = (req, res) ->
   res.render('scheduled.ect', { 
     req:req
     page: 'Scheduled' 
     daysOfWeek: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    timesOfDay: [
-        {
-         value:7
-         text:"7:00am"
-        },
-        {
-         value:9
-         text:"9:00am"
-        },
-        {
-         value:17.5
-         text:"5:30pm"
-        },
-        {
-         value:21
-         text:"9:00pm"
-        },
-        {
-         value:24
-         text:"Midnight"
-        }
-    ]
+    beginTimesOfDay: timesOfDay[...-1]
+    endTimesOfDay: timesOfDay[1..]
     reminders: [
         {
          message: "How happy are you right now on a scale of 0-10?"

@@ -14,7 +14,7 @@
               <td>
                 <span>
                   <div class="well valign-remove-margins" style="margin-left: 20px">
-                    <input type="text" value="<%= time.frequency %>" class="input-mini" /> times per day <b>every day</b> between <select class="input-time-of-day"><% for tdde in @timesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.start : %> selected<% end %>><%= tdde.text %></option><% end %></select> and <select class="input-time-of-day"><% for tdde in @timesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.end : %> selected<% end %>><%= tdde.text %></option><% end %></select><br />
+                    <input type="text" value="<%= time.frequency %>" class="input-mini" /> times per day <b>every day</b> between <select class="input-time-of-day"><% for tdde in @beginTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.start : %> selected<% end %>><%= tdde.text %></option><% end %></select> and <select class="input-time-of-day"><% for tdde in @endTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.end : %> selected<% end %>><%= tdde.text %></option><% end %></select><br />
                     <% for day in @daysOfWeek : %>
                     <label class="checkbox inline"><input type="checkbox" name="monday1"<% if day in time.days : %> checked<% end %>/> <%- day %></label>
                     <% end %>
