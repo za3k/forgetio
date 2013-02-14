@@ -13,10 +13,9 @@
         <% include 'navbar.ect', this %>
         <% for type in ["error","info","success"] : %>
             <% if this[type+"Msg"]? : %>
-                <div class="alert alert-<%= type %> span10 offset1">
+                <div class="alert alert-<%= type %>">
                     <%= this[type+"Msg"] %>
                 </div>
-                <div class="span4"></div>
             <% end %>
         <% end %>
         <% content %>
