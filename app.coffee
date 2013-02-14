@@ -15,7 +15,7 @@ loginUtilMiddleware = (req, res, next)->
         logout:()->req.session=null
         loggedIn:()->req.session?.UserId?
         userId:()->req.session?.UserId
-    }        
+    }
     next()
 
 # create compiler

@@ -9,7 +9,7 @@ funcflow = require('funcflow')
     version:0
     message:'some message'
     enabled:true
-    id:undefined   # its a new recode
+    id:undefined   # it's a new record
     phone:'+15553121238'
     times:[{
         start:0 # seconds since 12am... in this case 12am
@@ -109,7 +109,7 @@ exports.runTran = (steps, callback=()->)->
         funcflow(createRollbackStep(steps[i]) for i in [currStep-1..0], (step, e)->callback(step, err))
     createRunStep = (index, stepFunc)->
         (step,err)->
-            if err 
+            if err
                 rollback(err)
                 return
             currStep = index
