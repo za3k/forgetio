@@ -18,6 +18,17 @@ loginUtilMiddleware = (req, res, next)->
     }        
     next()
 
+# create compiler
+compiler = require('connect-compiler')({
+    enabled:['snockets','less']
+    src:['assets','assets/bootstrap/']
+    dest:'public'
+    options:{
+        snockets:{minify:!nconf.get("debug")}
+        less:{paths:["./assets/bootstrap/css","./assets/css"],compress:!nconf.get("debug")}
+    }
+})
+
 # create app
 app = express()
 ectRenderer = ect({ watch: nconf.get("debug"), root: __dirname + '/views' })
@@ -36,6 +47,7 @@ app.configure(()->
     app.use(express.cookieSession({cookie: { maxAge: 60 * 60 * 1000 }}))
     app.use(loginUtilMiddleware)
     app.use(app.router)
+    app.use(compiler)
     app.use(express.static(path.join(__dirname, 'public')))
     app.use((err, req, res, next)-> # Handle any unhandled errors
         if err
@@ -52,7 +64,7 @@ app.get('/index.html', routes.index)
 app.get('/login.html', routes.login)
 app.get('/signup.html', routes.signup)
 app.post('/signup.html', routes.signupPost)
-app.all('*', routes.ensureLogin) # everything below this requires login
+app.all('*.html', routes.ensureLogin) # everything below this requires login
 app.get('/account.html', routes.account)
 app.get('/scheduled.html', routes.scheduled)
 app.get('/results.html', routes.results)
