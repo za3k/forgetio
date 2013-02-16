@@ -1,22 +1,24 @@
 <% extend 'layout.ect' %>
-<form>
   <% for reminder in @reminders : %>
-      <div class="well">
-        Message: <input type="text" class="input-block-level" value="<%= reminder.message %>"/><br />
+    <div class="well reminder">
+      <form method="post" action="/scheduled.html">
+        Message: <input type="text" class="input-block-level message" value="<%= reminder.message %>"/><br />
+        <% if reminder.id? : %><input type="hidden" class="id" value="<%= reminder.id %>"/><% end %>
+        <% if reminder.version? : %><input type="hidden" class="version" value="<%= reminder.version %>"/><% end %>
         <table class="valign-table">
         <% for time in reminder.times : %>
-            <tr>
+            <tr class="time">
               <td>
                 <label class="checkbox">
-                  <input type="checkbox"<% if time.enabled : %> checked<% end %>/> Send 
+                  <input type="checkbox" class="send-checkbox"<% if time.enabled : %> checked<% end %>/> Send 
                 </label>
               </td>
               <td>
                 <span>
-                  <div class="well valign-remove-margins" style="margin-left: 20px">
-                    <input type="text" value="<%= time.frequency %>" class="input-mini" /> times per day <b>every day</b> between <select class="input-time-of-day"><% for tdde in @beginTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.start : %> selected<% end %>><%= tdde.text %></option><% end %></select> and <select class="input-time-of-day"><% for tdde in @endTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.end : %> selected<% end %>><%= tdde.text %></option><% end %></select><br />
+                  <div class="well checkbox-toggles valign-remove-margins<% if !time.enabled : %> muted<% end %>" style="margin-left: 20px">
+                    <input type="text" value="<%= time.frequency %>" class="input-mini frequency" /> times per day <b>every day</b> between <select class="input-time-of-day start-time"><% for tdde in @beginTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.start : %> selected<% end %>><%= tdde.text %></option><% end %></select> and <select class="input-time-of-day end-time"><% for tdde in @endTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.end : %> selected<% end %>><%= tdde.text %></option><% end %></select><br />
                     <% for day in @daysOfWeek : %>
-                    <label class="checkbox inline"><input type="checkbox" name="monday1"<% if day in time.days : %> checked<% end %>/> <%- day %></label>
+                    <label class="checkbox inline day"><input type="checkbox" name="<%= day %>"<% if day in time.days : %> checked<% end %>/> <%- day %></label>
                     <% end %>
                   </div>
                 </span>
@@ -24,11 +26,21 @@
             </tr>
         <% end %>
         </table>
-      </div>
+        <label>Phone <input type="text" name="phone" class="phone" value="<%= reminder.phone %>" placeholder="555-555-5555"/></label>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary save">Save changes</button>
+          <button type="button" class="btn">Cancel</button>
+        </div>
+        <input type="hidden" name="json" class="output"/>
+      </form>
+    </div>
   <% end %>
+
   
-  <div class="form-actions">
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <button type="button" class="btn">Cancel</button>
-  </div>
-</form>
+
+<% block 'javascript' : %>
+    <script type="text/javascript" src="/js/scheduled.js"></script>
+    <script type="text/javascript">
+        
+    </script>
+<% end %>

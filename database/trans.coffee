@@ -49,6 +49,8 @@ exports.createSaveReminderTran = (reminder)->
             if reminder.parentId? and (not rem? or rem.UserId != reminder.UserId)
                 console.log reminder.parentId
                 throw "User does not own the reminder they are trying to save!"
+            if rem?.parentId?
+                reminder.parentId = rem.parentId # Point to the root, not the immediate parent
             step.next()
     },exports.createSavePhoneTran({number:reminder.phone}),{
         errMsg:"Could not save Reminder"
@@ -64,7 +66,7 @@ exports.createSaveReminderTran = (reminder)->
             step.next(savedReminder)
     }])
 
-### example of reminder for this query
+### example of phone number for this query
 {
     id:undefined # new number
     number:"+15554561738"
@@ -121,25 +123,3 @@ exports.runTran = (steps, callback=()->)->
             else
                 step.next()
     funcflow((createRunStep(i, steps[i]) for i in [0...steps.length]),{}, callback)
-
-ssss = exports.createSaveReminderTran({
-    UserId:0
-    version:0
-    message:'some message'
-    enabled:true
-    id:undefined   # its a new recode
-    phone:'+15553121238'
-    times:[{
-        start:0 # seconds since 12am... in this case 12am
-        end:60*60*8 # seconds since 12am... in this case 8 am
-        frequency: 5
-        days: 31 # there are utility methods getDays and setDays on model.ReminderTime which make setting this value easier
-    },{
-        start:60*60*1 # seconds since 12am... in this case 1 am
-        end:60*60*8 # seconds since 12am... in this case 8 am
-        frequency: 5
-        days: 31 # there are utility methods getDays and setDays on model.ReminderTime which make setting this value easier
-    }]
-})
-exports.runTran(ssss, ()->console.log(arguments))
-
