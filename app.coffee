@@ -59,9 +59,10 @@ app.configure(()->
 )
 logger.debug('App Configured!')
 
-app.get('/', routes.index)
-app.get('/index.html', routes.index)
+app.get('/', routes.home)
+app.get('/index.html', routes.home)
 app.get('/login.html', routes.login)
+app.post('/login.html', routes.loginPost)
 app.get('/signup.html', routes.signup)
 app.post('/signup.html', routes.signupPost)
 app.all('*.html', routes.ensureLogin) # everything below this requires login
