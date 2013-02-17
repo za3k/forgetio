@@ -41,9 +41,10 @@ User = define('User', {
     password:{ type:Sequelize.STRING, allowNull:false }
 })
 
-UserRole = define('UserRole', {
-    role:{ type:Sequelize.STRING, allowNull:false }
-})
+#Enable once needed
+#UserRole = define('UserRole', {
+#    role:{ type:Sequelize.STRING, allowNull:false }
+#})
     
 Reminder = define('Reminder', {
     id:defaultID
