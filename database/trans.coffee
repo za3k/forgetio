@@ -35,7 +35,7 @@ exports.createSaveReminderTran = (reminder)->
             errMsg:"Could not create ReminderTime"
             run:(step)->
                 @time = model.ReminderTime.build(time)
-                @time.ReminderId = savedReminder.id
+                @time.reminder_id = savedReminder.id
                 @time.save()
             rollback:(step)->@time.destroy()
         }
@@ -56,7 +56,7 @@ exports.createSaveReminderTran = (reminder)->
         errMsg:"Could not save Reminder"
         run:(step,err,phone)->
             savedReminder = model.Reminder.build(if reminder.values? then reminder.values else reminder)
-            savedReminder.PhoneId = phone.id
+            savedReminder.phone_id = phone.id
             delete savedReminder.phone
             delete savedReminder.times
             savedReminder.save()
@@ -90,7 +90,7 @@ exports.createSavePhoneTran = (phone)->
             phone.isNewRecord = not phone.id?
             phone.save()
     },{
-        run:(step)->step.next(phone)
+        run:(step, error, p)->step.next(p)
     }]
     
 exports.runTran = (steps, callback=()->)->

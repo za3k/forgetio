@@ -21,19 +21,19 @@ defaultID = {
     autoIncrement: true
     primaryKey: true
 }
-define = (name, options)->
-    tmp = sequelize.define(name, options)
+define = (name, dbname, options)->
+    tmp = sequelize.define(dbname, options)
     extern(name, tmp)
     return tmp
 
 # Actual Model Starts Here
-Phone = define('Phone', {
+Phone = define('Phone', 'phones', {
     id:defaultID
     number:{ type:Sequelize.STRING, allowNull:false }
     confirmedDate:{ type:Sequelize.DATE, defaultValue:null }
 })
 
-User = define('User', {
+User = define('User', 'users', {
     id:defaultID
     credit:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0} # in messages
     name:{ type:Sequelize.STRING }
@@ -46,16 +46,14 @@ User = define('User', {
 #    role:{ type:Sequelize.STRING, allowNull:false }
 #})
     
-Reminder = define('Reminder', {
+Reminder = define('Reminder', 'reminders', {
     id:defaultID
-    parentId:{type:Sequelize.INTEGER, allowNull:true, defaultValue:null }
     version:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 }
     message:{ type:Sequelize.STRING, allowNull:false, defaultValue:"" }
-    enabled:{ type:Sequelize.BOOLEAN, allowNull:false, defaultValue:true }
 })
 
-ReminderTime = define('ReminderTime', {
-    start:{ type:Sequelize.INTEGER, allowNull:false }
+ReminderTime = define('ReminderTime', 'reminder_times', {
+    start:{ type:Sequelize.INTEGER, allowNull:false } # in seconds since midnight
     end:{ type:Sequelize.INTEGER, allowNull:false }
     frequency:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 }
     days:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 } # flag field where    1:sun 2:mon 4:tue 8:wed 16:thur 32:fri 64:sat
@@ -66,16 +64,16 @@ ReminderTime = define('ReminderTime', {
     }
 })
 
-TimeZone = define('TimeZone', {
+TimeZone = define('TimeZone', 'timezones', {
     id:defaultID
-    offset:{ type:Sequelize.FLOAT, allowNull:false }
+    offset:{ type:Sequelize.INTEGER, allowNull:false } # in seconds from UTC
     text:{ type:Sequelize.STRING, allowNull:false }
 })
 
 # Associations
 #User.hasMany(UserRole, {as:'Roles'})
-User.hasMany(Reminder, {as:'Reminders'})
-User.belongsTo(TimeZone, {as:'TimeZone'})
-Reminder.hasMany(ReminderTime, {as:'Times'})
-Reminder.belongsTo(Phone, {as:'Phone'})
-Phone.belongsTo(User, {as:'User'})
+User.hasMany(Reminder, {as:'Reminders', foreignKey: "user_id"})
+User.belongsTo(TimeZone, {as:'TimeZone', foreignKey: "timezone_id"})
+Reminder.hasMany(ReminderTime, {as:'Times', foreignKey: "reminder_id"})
+Reminder.belongsTo(Phone, {as:'Phone', foreignKey: "phone_id"})
+Phone.belongsTo(User, {as:'User', foreignKey: 'user_id'})

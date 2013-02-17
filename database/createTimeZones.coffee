@@ -99,7 +99,7 @@ run = (parms, callback)->
     steps = []
     createStep = (timeZone)->
         return (step,err)->model.TimeZone
-            .build({ text:timeZone[0], offset:timeZone[1] })
+            .build({ text:timeZone[0], offset:timeZone[1]*60*60 })
             .save()
             .success(step.next)
             .error((err)->throw err.toString())

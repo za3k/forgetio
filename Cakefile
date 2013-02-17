@@ -8,24 +8,35 @@ nconf = common.nconf
 logger = common.logger
 
 createDbDropSteps= ()->
-    model = require('./database/model')
-    return [
-        (step, err)->model.sequelize.drop().success(step.next).error((err)->logger.error(err))
+    return common.flatten [
+        for table in ["users", "reminders", "phones", "reminder_times", "sent_messages", "received_messages", "timezones"]
+          do (table) ->
+            (step, err)->
+              childProcess.exec 'psql notify -c "DROP TABLE ' + table + ' CASCADE;"', (error, stdout, stderr) ->
+                console.log("Dropping table " + table + "...")
+                console.log(stdout)
+                console.log(stderr)
+                if error
+                  common.logger.error(error)
+                step.next()
         (step, err)->
+            if err
+              common.logger.error(error)
             logger.debug('All tables have been droped!!')
             step.next()
     ]
     
 createDbCreateSteps= ()->
     model = require('./database/model')
-    handle=(emitter, callback)->
-        emitter.on("success", callback)
-        emitter.on("error", (err)->console.log(err))
     return [
-        (step, err)->handle(model.sequelize.sync({force:true}), step.next)
+        (step, err)->
+          childProcess.exec 'python ./database/sql_def.py', (error, stdout, stderr) ->
+            console.log(stdout)
+            console.log(stderr)
+            if error
+              common.logger.error(error)
+            step.next()
         (step, err)->logger.debug('Created tables!'); step.next()
-        (step, err)->handle(model.sequelize.getQueryInterface().addIndex('Reminders',['parentId','version'], {indicesType:'UNIQUE'}), step.next)
-        (step, err)->logger.debug('Modified tables!'); step.next()
         (step, err)->require('./database/createTimeZones').run({}, step.next)
         (step, err)->logger.debug('Inserted data!'); step.next()
         (step, err)->logger.debug('Database created!'); step.next()
