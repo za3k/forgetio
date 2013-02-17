@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Interval, Boolean, DateTime
 
-engine = create_engine('postgresql://localhost/zachary', echo=True)
+engine = create_engine('postgresql://localhost/notify', echo=True)
 Base = declarative_base()
 
 class Phone(Base):
