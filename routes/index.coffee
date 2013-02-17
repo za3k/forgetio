@@ -1,8 +1,9 @@
 common = require('../common')
 all = require('./all')
+account = require('./account')
 
-exports.account = all.account
-exports.accountPost = all.accountPost
+exports.account = account.account
+exports.accountPost = account.accountPost
 exports.ensureLogin = all.ensureLogin
 exports.home = all.home
 exports.login = all.login
