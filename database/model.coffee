@@ -73,7 +73,7 @@ TimeZone = define('TimeZone', {
 })
 
 # Associations
-User.hasMany(UserRole, {as:'Roles'})
+#User.hasMany(UserRole, {as:'Roles'})
 User.hasMany(Reminder, {as:'Reminders'})
 User.belongsTo(TimeZone, {as:'TimeZone'})
 Reminder.hasMany(ReminderTime, {as:'Times'})
