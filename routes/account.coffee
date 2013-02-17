@@ -3,13 +3,11 @@ common = require('../common')
 model = require('../database/model')
 funcflow = require('funcflow')
 sanitize = require('validator').sanitize
-shared = common.shared
 
 exports.account = (req, res, data) ->
-  shared.getUser(req).success((u) ->
+  common.getUser(req).success((u) ->
       res.render('account.ect', common.extend({
         page: 'Account'
-        timezones: shared.timezones
         req:req
         user: {
           messagesReceived: 5 #TODO
@@ -38,7 +36,7 @@ exports.account = (req, res, data) ->
 exports.accountPost = (req, res) ->
     json = req.body
     steps = [(step, err)->
-      shared.getUser(req).success((user)->
+      common.getUser(req).success((user)->
         if !user?
           common.logger.error("User does not exist", err)
           step.errorHandler({message:"There was a server error!"})

@@ -12,7 +12,7 @@
     <div class="controls">
       <select name="TimeZoneId" id="TimeZoneId" class="span6"">
         <option value="" <%= if !@TimeZoneId? then "selected" %>></option>
-      <% for tz in @timezones : %>
+      <% for tz in @req.config.timezones : %>
         <option value="<%= tz.id %>" <%= if @TimeZoneId?.toString() == tz.id.toString() then "selected" %> ><%= tz.text %></option>
       <% end %>
       </select>          

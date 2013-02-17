@@ -29,7 +29,7 @@
       <form class="form" method="post" action="/account.html">
           <select name="timezone" id="DropDownTimezone" class="span4">
             <option<% if !@user.TimeZoneId? : %> selected<% end %>></option>
-          <% for tz in @timezones : %>
+          <% for tz in @req.config.timezones : %>
             <option value="<%= tz.id %>"<% if @user.timezone == tz.id : %> selected<% end %>><%= tz.text %></option>
           <% end %>
           </select>

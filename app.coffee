@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 express = require('express')
-routes = require('./routes')
+routes = require('./routes/all')
 http = require('http')
 path = require('path')
 ect = require('ect')
@@ -16,6 +16,11 @@ loginUtilMiddleware = (req, res, next)->
         loggedIn:()->req.session?.UserId?
         userId:()->req.session?.UserId
     }
+    next()
+
+# common route config info
+routeCommonConfig = (req, res, next) ->
+    req.config = common.ectConfig
     next()
 
 # create compiler
@@ -45,6 +50,7 @@ app.configure(()->
     app.use(express.methodOverride())
     app.use(express.cookieParser('braSP8pUpR5XuDapHAT9e87ecHUtHufr'))
     app.use(express.cookieSession({cookie: { maxAge: 60 * 60 * 1000 }}))
+    app.use(routeCommonConfig)
     app.use(loginUtilMiddleware)
     app.use(app.router)
     app.use(compiler)

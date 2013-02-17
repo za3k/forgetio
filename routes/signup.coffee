@@ -9,7 +9,7 @@ signup = (req, res, data={})->
     res.render('signup.ect', common.extend({
         page: 'Signup'
         req:req
-        timezones: shared.timezones}, data))
+        config: req.config}, data))
 exports.signup=(req, res)->signup(req,res)
 exports.signupPost = (req, res) ->
     json = req.body
