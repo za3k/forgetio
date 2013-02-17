@@ -1,24 +1,31 @@
 <div class="navbar">
   <div class="navbar-inner">
-    <a class="brand" href="#"><%- @appname %></a>
-    <ul class="nav">
-      <% for entry in [{page: 'Home', text: 'Home', path:'/'}
-                       {page: 'Account', text: 'My Account', path: '/account.html', signedIn:true}
-                       {page: 'Scheduled', text: 'Repeating Messages', path: '/scheduled.html', signedIn:true}
-                       {page: 'Results', text: 'Results', path: '/results.html', signedIn:true}
-                       {page: '|'}
-                       {page: 'Logout', text:'Logout', path:'/logout.html', signedIn:true}
-                       {page: 'Login', text:'Login', path:'/login.html', signedIn:false}
-                       {page: 'Signup', text:'Sign up', path:'/signup.html', signedIn:false}
-                       ] : %>
-        <% if entry.page == '|' : %>
-          <li class="divider-vertical"></li>
-        <% else if !entry.signedIn? or entry.signedIn == true && @req.user.loggedIn() or entry.signedIn == false && !@req.user.loggedIn() : %>
-          <li<% if entry.page == @page : %> class="active"<% end %>>
-            <a href="<%- entry.path %>"><%- entry.text %></a>
-          </li>
+    <div class="container" style="width: auto;">
+      <a class="brand" href="#"><%- @appname %></a>
+      <ul class="nav">
+        <% for entry in [{page: 'Home', text: 'Home', path:'/'}
+                         {page: 'Account', text: 'My Account', path: '/account.html', signedIn:true}
+                         {page: 'Scheduled', text: 'Repeating Messages', path: '/scheduled.html', signedIn:true}
+                         {page: 'Results', text: 'Results', path: '/results.html', signedIn:true}
+                         {page: '|'}
+                         {page: 'Login', text:'Login', path:'/login.html', signedIn:false}
+                         {page: 'Signup', text:'Sign up', path:'/signup.html', signedIn:false}
+                         ] : %>
+          <% if entry.page == '|' : %>
+            <li class="divider-vertical"></li>
+          <% else if entry.page=="Logout" && @req.user.loggedIn() : %>
+          <% else if !entry.signedIn? or entry.signedIn == true && @req.user.loggedIn() or entry.signedIn == false && !@req.user.loggedIn() : %>
+            <li<% if entry.page == @page : %> class="active"<% end %>>
+              <a href="<%- entry.path %>"><%- entry.text %></a>
+            </li>
+          <% end %>
         <% end %>
+      </ul>
+      <% for entry in [{page: 'Logout', text:'Logout', path:'/logout.html', signedIn:true}] : %>
+          <% if !entry.signedIn? or entry.signedIn == true && @req.user.loggedIn() or entry.signedIn == false && !@req.user.loggedIn() : %>
+            <a href="<%- entry.path %>" class="btn btn-primary"><%- entry.text %></a>
+          <% end %>
       <% end %>
-    </ul>
+    </div>
   </div>
 </div>
