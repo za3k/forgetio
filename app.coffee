@@ -77,6 +77,8 @@ app.post('/account.html', routes.accountPost)
 app.get('/scheduled.html', routes.scheduled)
 app.post('/scheduled.html', routes.scheduledPost)
 app.get('/results.html', routes.results)
+app.get('/results/all', routes.csvExportAllReminders)
+app.get('/results/:id', routes.csvExportSingleReminder)
 app.get('/logout.html', routes.logout)
 logger.debug('Routes Configured!')
 

@@ -6,12 +6,17 @@ sanitize = require('validator').sanitize
 
 exports.account = (req, res, data) ->
   common.getUser(req).success((u) ->
+    model.getCommunication u, (err, result) ->
+      if err
+        common.logger.error err
+      all = common._.pluck(result, 'server_received')
+      result_present = common._.compact(all)
       res.render('account.ect', common.extend({
         page: 'Account'
         req:req
         user: {
-          messagesReceived: 5 #TODO
-          messagesSent: 20
+          messagesReceived: result_present.length
+          messagesSent: all.length - result_present.length
           timezone: u.timezone_id
           name: u.name
           credits: u.credit
@@ -20,11 +25,11 @@ exports.account = (req, res, data) ->
           upperTimeEstimate: u.credit / 5
         }
         warningLevel: (daysLeft) ->
-            if daysLeft == 0
+            if daysLeft < 1
                 "alert alert-error"
-            else if 1 < daysLeft < 7
+            else if 1 <= daysLeft < 7
                 "alert"
-            else if 7 < daysLeft
+            else
                 "alert alert-info"
       }, data))
   ).failure((err) ->

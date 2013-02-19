@@ -1,4 +1,3 @@
-common = require('../common')
 account = require('./account')
 home = require('./home')
 login = require('./login')
@@ -9,6 +8,8 @@ signup = require('./signup')
 
 exports.account = account.account
 exports.accountPost = account.accountPost
+exports.csvExportAllReminders = results.csvExport
+exports.csvExportSingleReminder = results.csvExport
 exports.ensureLogin = login.ensureLogin
 exports.home = home.home
 exports.login = login.login
