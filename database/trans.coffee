@@ -27,7 +27,7 @@ funcflow = require('funcflow')
 exports.createSaveReminderTran = (reminder)->
     if reminder.id?
         reminder.version++
-        if not reminder.parentId? then reminder.parentId = reminder.id
+        if not reminder.parent_id? then reminder.parent_id = reminder.id
         delete reminder.id
     savedReminder = null
     createTimeStep = (time)->
@@ -54,15 +54,15 @@ exports.createSaveReminderTran = (reminder)->
     return common.flatten([{
         errMsg:"Call to see if user owns reminder failed!"
         run:(step,err)->
-            if not reminder.parentId? then step.next(); return
-            model.Reminder.find({where:{id:reminder.parentId}})
+            if not reminder.parent_id? then step.next(); return
+            model.Reminder.find({where:{id:reminder.parent_id}})
     },{
         run:(step,err, rem)->
-            if reminder.parentId? and (not rem? or rem.UserId != reminder.UserId)
-                console.log reminder.parentId
+            if reminder.parent_id? and (not rem? or rem.UserId != reminder.UserId)
+                console.log reminder.parent_id
                 throw "User does not own the reminder they are trying to save!"
-            if rem?.parentId?
-                reminder.parentId = rem.parentId # Point to the root, not the immediate parent
+            if rem?.parent_id?
+                reminder.parent_id = rem.parent_id # Point to the root, not the immediate parent
             step.next()
     },exports.createSavePhoneTran({number:reminder.phone}),{
         errMsg:"Could not save Reminder"

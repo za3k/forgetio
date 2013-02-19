@@ -42,7 +42,7 @@ getRemindersForUser = (user, cb) ->
                     days: []
                   }
                   d = t.days
-                  for day in ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat", "Sun"]
+                  for day in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
                     if (d % 2) == 1
                       time.days.push(day)
                       d -= 1
@@ -65,11 +65,11 @@ getRemindersForUser = (user, cb) ->
   ]
   last = (step) ->
     for r in step.reminders
-      if !r.parentId?
+      if !r.parent_id?
         r.parentId = r.id
     step.reminders = step.reminders.filter (reminder) ->
       for r in step.reminders
-        if r.parentId == reminder.parentId and r.version > reminder.version
+        if r.parent_id == reminder.parent_id and r.version > reminder.version
           return false
       return true
     step.cb(step.reminders)

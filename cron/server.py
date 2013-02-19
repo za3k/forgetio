@@ -1,6 +1,6 @@
 from bottle import route, run, template, request
 import datetime as dt
-datetime, timedelta = dt.datetime, dt.timedelta
+datetime, timedelta, tzinfo = dt.datetime, dt.timedelta, dt.tzinfo
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
@@ -91,8 +91,17 @@ def send_all_scheduled_messages():
         session.add(message)
         session.commit()
 def send_scheduled_message(message):
-    #TODO: Make sure this message is still in allowable time.
+    # Make sure this message is still in allowable time.
     # if it's not, don't send it and instead refund the user a credit.
+    reminder = message.sent_for_reminder_time.reminder
+    if is_latest_reminder(reminder):
+        print(message.body)
+        message.body = reminder.message
+    else:
+        reminder.user.credit += 1
+        message.cancelled = True
+        return
+
     print(message.body)
     account = message.account
     token = {"AC84c3eee95bf50e49e7bbd0f1e42e530b":"a85c7381360cf4724b3862a87900c07c"}.get(account)
@@ -153,6 +162,9 @@ class Server():
         print("Looking for messages to send...")
         send_all_scheduled_messages()
         print("    Done.")
+        print()
+        print()
+        print()
         send_emails()
 
 def schedule_messages():
@@ -162,7 +174,7 @@ def schedule_messages():
     for user in session.query(User):
         times = []  
         for reminder in user.reminders:
-            if len(reminder.children) == 0: #latest version of the reminder
+            if is_latest_reminder(reminder): #latest version of the reminder
               for time in reminder.times:
                   times.append(time)
                   q = session.query(SentMessage)
@@ -171,48 +183,74 @@ def schedule_messages():
                   q = q.filter(SentMessage.cancelled == False)
                   queued_messages = q.count()
                   if queued_messages == 0:
-                      schedule_reminder_time_for_user(time, user)
+                    schedule_reminder_time_for_user(time, user)
                   print("QUEUED MESSAGES: {}".format(queued_messages))
-            else: #old versions of reminders
-              for time in reminder.times:
-                  q = session.query(SentMessage)
-                  q = q.filter(SentMessage.sent_for_reminder_time_id == time.id)
-                  q = q.filter(SentMessage.server_sent == None)
-                  q = q.filter(SentMessage.cancelled == False)
-                  for msg in q.all():
-                    msg.cancelled = True
-                    user.credit += 1
     session.commit()
 
-def next_scheduled_time(start_time, end_time, days, frequency_per_day, current_datetime):
-    #import pdb;pdb.set_trace()
+def is_latest_reminder(reminder):
+    if reminder.parent:
+      sibs = reminder.parent.children
+      max_version = reminder.version
+      for sib in sibs:
+          if sib.version > max_version:
+            max_version = sib.version
+      return max_version == reminder.version
+    else:
+      return len(reminder.children)==0
+
+def next_scheduled_time(start_time, end_time, days, frequency_per_day, current_datetime, user_timezone):
     import random
     days = days_as_array(days)
+    print(days)
+    user_timezone_delta = timedelta(seconds=user_timezone)
     daily_duration = end_time - start_time
     avg_interval = daily_duration / frequency_per_day
     delay_interval = random.expovariate(1) * avg_interval
 
-    current_seconds = current_datetime.second + current_datetime.minute * 60 + current_datetime.hour * 3600
-    current_date = datetime.combine(current_datetime.date(), dt.time())
+    print("Current (UTC): " + str(current_datetime))
+    current_datetime += user_timezone_delta
+    print("Current (user): " + str(current_datetime))
     # schedule at the earliest available opportunity if we're outside valid times
-    while not days[current_date.weekday()]: # 
-        current_date += timedelta(days=1)
-        current_seconds = start_time 
-    if not (start_time <= current_seconds <= end_time):
-        current_seconds = start_time 
-
-    delay_days = (current_seconds + delay_interval) // daily_duration
+    current_seconds = current_datetime.second + current_datetime.minute * 60 + current_datetime.hour * 3600
+    if days[current_datetime.weekday()] == 0 or not (start_time < current_seconds < end_time):
+        # roll the time forward to start_time
+        current_datetime += timedelta(seconds=(start_time - current_seconds))
+        if start_time < current_seconds: # we rolled back a bit; go forwards again
+            current_datetime += timedelta(days=1)
+        current_seconds = current_datetime.second + current_datetime.minute * 60 + current_datetime.hour * 3600
+        assert(current_seconds == start_time)
+    while days[current_datetime.weekday()] == 0:
+        current_datetime += timedelta(days=1)
+    current_date = datetime.combine(current_datetime.date(), dt.time())
+    print(end_time)
+    print("Adjusted (user): " + str(datetime.combine(current_datetime.date(), dt.time())+timedelta(seconds=current_seconds)))
+    
+    import math
+    delay_days = math.ceil(float(max(0, current_seconds + delay_interval - end_time)) / daily_duration)
+    print(delay_days)
     post_delay_seconds = ((current_seconds + delay_interval - start_time) % daily_duration) + start_time
+    print(delay_interval)
+    print(daily_duration)
+    print(start_time)
+    print(current_seconds)
+    print(post_delay_seconds)
+    if post_delay_seconds < 0:
+        print('egads!')
+    #import pdb;pdb.set_trace()
 
     post_delay_date = current_date
     while delay_days > 0:
+        print("subtracting " + str(delay_days) + "st/nd/th day: " + str(post_delay_date))
         delay_days -= 1
         post_delay_date += timedelta(days=1)
-        while not days[post_delay_date.weekday()]:
+        while days[post_delay_date.weekday()] == 0:
             post_delay_date +=timedelta(days=1)
 
-    post_delay_datetime = datetime.combine(post_delay_date, dt.time()) + timedelta(seconds=post_delay_seconds)
+    post_delay_datetime = datetime.combine(post_delay_date.date(), dt.time()) + timedelta(seconds=post_delay_seconds)
+    print("Final (user): " + str(post_delay_datetime))
+    post_delay_datetime -= user_timezone_delta
 
+    print("Final (UTC): " + str(post_delay_datetime))
     return post_delay_datetime
     
 def days_as_array(d):
@@ -227,8 +265,8 @@ def schedule_reminder_time_for_user(reminder_time, user):
         return
     else:
         user.credit -= 1
-   
-    scheduled_time = next_scheduled_time(reminder_time.start, reminder_time.end, reminder_time.days, reminder_time.frequency, datetime.utcnow())
+  
+    scheduled_time = next_scheduled_time(reminder_time.start, reminder_time.end, reminder_time.days, reminder_time.frequency, datetime.utcnow(), user.timezone.offset)
     
     print(scheduled_time)
     print(reminder_time.reminder.message)
