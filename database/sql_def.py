@@ -111,4 +111,6 @@ class Timezone(Base):
     createdAt = Column(DateTime)
     updatedAt = Column(DateTime)
 
+# CREATE VIEW communication AS SELECT reminders.id AS reminder_id, reminders.version, reminder_times.id AS reminder_time_id, users.id AS user_id, reminders.message, sent_messages.scheduled, sent_messages.cancelled,received_messages.server_received,received_messages.body FROM users,reminders,reminder_times,sent_messages LEFT JOIN received_messages ON (sent_messages.id = received_messages.in_response_to) WHERE (users.id = reminders.user_id AND reminders.id = reminder_times.reminder_id AND sent_messages.sent_for_reminder_time_id = reminder_times.id);
+
 Base.metadata.create_all(engine)

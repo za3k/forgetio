@@ -1,8 +1,19 @@
 common = require '../common'
+pg = require 'pg'
 nconf = common.nconf
 logger = common.logger
 
 extern=(name,value)->module.exports[name]= value
+
+communication = "SELECT reminders.id AS reminder_id, reminders.version, reminder_times.id AS reminder_time_id, users.id AS user_id, reminders.message, sent_messages.scheduled, sent_messages.cancelled, received_messages.server_received, received_messages.body FROM users,reminders,reminder_times,sent_messages LEFT JOIN received_messages ON (sent_messages.id = received_messages.in_response_to) WHERE (users.id = reminders.user_id AND reminders.id = reminder_times.reminder_id AND sent_messages.sent_for_reminder_time_id = reminder_times.id AND sent_messages.cancelled = false) ORDER BY scheduled DESC"
+
+module.exports.getCommunication = (user, cb) ->
+     pg.connect "tcp://localhost/notify", (err, client) ->
+        client.query communication, (err, result) ->
+          if err
+            cb err, null
+          else
+            cb err, result.rows.filter (x) -> x.user_id == user.id
 
 Sequelize = require("sequelize")
 sequelize = new Sequelize('notify','postgres','brinksucksballs', {
@@ -64,6 +75,36 @@ ReminderTime = define('ReminderTime', 'reminder_times', {
     }
 })
 
+SentMessage = define('SentMessage', 'sent_messages', {
+    id:defaultID
+    account: {type:sequelize.STRING, allowNull:false }
+    twilio_id: {type:sequelize.STRING, allowNull:false }
+    from_: {type:sequelize.STRING, allowNull:false }
+    to: {type:sequelize.STRING, allowNull:false }
+    body: {type:sequelize.STRING, allowNull:false }
+    scheduled: {type:sequelize.DATE, allowNull:false }
+    api_version: {type:sequelize.STRING, allowNull:false }
+    server_sent: {type:sequelize.DATE, allowNull:true }
+    server_confirmed: {type:sequelize.DATE, allowNull:true }
+    twilio_status: {type:sequelize.STRING, allowNull:false }
+    twilio_uri: {type:sequelize.STRING, allowNull:false }
+    was_processed_after_confirm: {type:sequelize.BOOLEAN, allowNull:false, default:false }
+    cancelled: {type:sequelize.BOOLEAN, allowNull:false, default:false }
+})
+
+ReceivedMessage = define('ReceivedMessage', 'received_messages', {
+    id:defaultID
+    account: {type:sequelize.STRING, allowNull:false }
+    twilio_id: {type:sequelize.STRING, allowNull:false }
+    from_: {type:sequelize.STRING, allowNull:false }
+    to: {type:sequelize.STRING, allowNull:false }
+    body: {type:sequelize.STRING, allowNull:false }
+    server_received: {type:sequelize.DATE, allowNull:true }
+    api_version: {type:sequelize.STRING, allowNull:false }
+    twilio_status: {type:sequelize.STRING, allowNull:true }
+    was_processed_after_received: {type:sequelize.BOOLEAN, allowNull:false, default:false }
+})
+
 TimeZone = define('TimeZone', 'timezones', {
     id:defaultID
     offset:{ type:Sequelize.INTEGER, allowNull:false } # in seconds from UTC
@@ -76,4 +117,6 @@ User.hasMany(Reminder, {as:'Reminders', foreignKey: "user_id"})
 User.belongsTo(TimeZone, {as:'TimeZone', foreignKey: "timezone_id"})
 Reminder.hasMany(ReminderTime, {as:'Times', foreignKey: "reminder_id"})
 Reminder.belongsTo(Phone, {as:'Phone', foreignKey: "phone_id"})
-Phone.belongsTo(User, {as:'User', foreignKey: 'user_id'})
+Phone.belongsTo(User, {as:'User', foreignKey: "user_id"})
+SentMessage.belongsTo(ReminderTime, {as:'ReminderTime', foreignKey: "sent_for_reminder_time_id"})
+ReceivedMessage.belongsTo(SentMessage, {as:'InResponseTo', foreignKey: "in_response_to"})
