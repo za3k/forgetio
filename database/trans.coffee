@@ -39,6 +39,18 @@ exports.createSaveReminderTran = (reminder)->
                 @time.save()
             rollback:(step)->@time.destroy()
         }
+    removeTimeStep = (time)->
+        return {
+            errMsg:"Could not delete ReminderTime"
+            run:(step)->
+                model.ReminderTime.find({where:{id:time.id}}).success((time) ->
+                    @time = time
+                    @time.deleted = true
+                    @time.save())
+            rollback:(step)->
+                @time.deleted = false # simplistic but hopefully this works
+                @time.save()
+        }
     return common.flatten([{
         errMsg:"Call to see if user owns reminder failed!"
         run:(step,err)->

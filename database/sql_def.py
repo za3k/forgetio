@@ -50,7 +50,7 @@ class Reminder(Base):
     updatedAt = Column(DateTime)
    
     user = relationship("User", backref='reminders', order_by=id)
-    children = relationship("Reminder", backref=backref("parent"), remote_side=[id])
+    children = relationship("Reminder", backref=backref("parent", remote_side=[id]))
     phone = relationship("Phone")
 
 class ReminderTime(Base):
@@ -71,7 +71,7 @@ class SentMessage(Base):
     __tablename__ = 'sent_messages'
 
     id = Column(Integer, primary_key=True)
-    sent_for_reminder_id = Column(Integer, ForeignKey('reminders.id'))
+    sent_for_reminder_time_id = Column(Integer, ForeignKey('reminder_times.id'))
     account = Column(String)
     twilio_id = Column(String)
     from_ = Column(String)
@@ -84,8 +84,9 @@ class SentMessage(Base):
     twilio_status = Column(String)
     twilio_uri = Column(String)
     was_processed_after_confirm = Column(Boolean)
+    cancelled = Column(Boolean, default=False, nullable=False)
 
-    sent_for_reminder = relationship("Reminder")
+    sent_for_reminder_time = relationship("ReminderTime", backref="sent_reminders", order_by=id)
 
 class ReceivedMessage(Base):
     __tablename__ = 'received_messages'

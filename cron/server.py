@@ -1,18 +1,24 @@
 from bottle import route, run, template, request
-from datetime import datetime, timedelta
+import datetime as dt
+datetime, timedelta = dt.datetime, dt.timedelta
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
+
+import sys
+sys.path.append('./../database/')
 from sql_def import User, Phone, Reminder, SentMessage, ReceivedMessage
+
 import json
 import time, threading
 
-engine = create_engine('postgresql://localhost/zachary', echo=True)
+engine = create_engine('postgresql://localhost/notify', echo=True)
 # create a Session
 Session = sessionmaker(bind=engine)
 
 @route('/sms/status', method='POST')
 def receive_sms_status():
+   "TODO"
    from pprint import pprint
    print("SMS STATUS")
    pprint(request.POST)
@@ -54,9 +60,8 @@ def receive_sms(sms):
     message.was_processed_after_received = True
     session.add(message)
     session.commit()
-    schedule_message_to_send(body="Why do you say \"{}\"".format(message.body), to=message.from_)
 
-def schedule_message_to_send(body, to="+15135495690", from_="+15132015132", time=None):
+def schedule_message_to_send(body, to="+15135495690", from_="+15132015132", time=None, for_reminder_time=None):
     """time of None means 'now'"""
     if time is None:
         time = datetime.utcnow()
@@ -66,9 +71,8 @@ def schedule_message_to_send(body, to="+15135495690", from_="+15132015132", time
         from_=from_,
         to=to,
         body=body,
-        scheduled=time)
-    session.add(message)
-    session.commit()
+        scheduled=time,
+        sent_for_reminder_time=for_reminder_time)
 
 def scheduled_messages(before_time=None):
     if before_time is None:
@@ -78,6 +82,7 @@ def scheduled_messages(before_time=None):
     s = session.query(SentMessage)
     s = s.filter(SentMessage.server_sent == None)
     s = s.filter(SentMessage.scheduled <= before_time)
+    s = s.filter(SentMessage.cancelled == False)
     return session, s.all()
 def send_all_scheduled_messages():
     session, messages = scheduled_messages()
@@ -86,6 +91,8 @@ def send_all_scheduled_messages():
         session.add(message)
         session.commit()
 def send_scheduled_message(message):
+    #TODO: Make sure this message is still in allowable time.
+    # if it's not, don't send it and instead refund the user a credit.
     print(message.body)
     account = message.account
     token = {"AC84c3eee95bf50e49e7bbd0f1e42e530b":"a85c7381360cf4724b3862a87900c07c"}.get(account)
@@ -140,45 +147,96 @@ class Server():
             self.periodic_tasks()
             time.sleep(5)
     def periodic_tasks(self):
-        print("Looking for messages to send...")
+        print("Looking for messages to schedule...")
         schedule_messages()
-        send_all_scheduled_messages()
-        send_emails()
         print("    Done.")
+        print("Looking for messages to send...")
+        send_all_scheduled_messages()
+        print("    Done.")
+        send_emails()
 
 def schedule_messages():
     '''find users without a scheduled messages and schedule them one'''
     # Let's be realistic -- make this more efficient once we need to.
     session = Session()
     for user in session.query(User):
-        if user.credit <= 0:
-            continue
-        phone = user.selected_phone
-        q = session.query(SentMessage)
-        q = q.filter(SentMessage.to == phone.number)
-        q = q.filter(SentMessage.server_sent == None)
-        queued_messages = q.count()
-        print("QUEUED MESSAGES: {}".format(queued_messages))
-        if queued_messages == 0:
-            schedule_reminders_for_user(user)
+        times = []  
+        for reminder in user.reminders:
+            if len(reminder.children) == 0: #latest version of the reminder
+              for time in reminder.times:
+                  times.append(time)
+                  q = session.query(SentMessage)
+                  q = q.filter(SentMessage.sent_for_reminder_time_id == time.id)
+                  q = q.filter(SentMessage.server_sent == None)
+                  q = q.filter(SentMessage.cancelled == False)
+                  queued_messages = q.count()
+                  if queued_messages == 0:
+                      schedule_reminder_time_for_user(time, user)
+                  print("QUEUED MESSAGES: {}".format(queued_messages))
+            else: #old versions of reminders
+              for time in reminder.times:
+                  q = session.query(SentMessage)
+                  q = q.filter(SentMessage.sent_for_reminder_time_id == time.id)
+                  q = q.filter(SentMessage.server_sent == None)
+                  q = q.filter(SentMessage.cancelled == False)
+                  for msg in q.all():
+                    msg.cancelled = True
+                    user.credit += 1
     session.commit()
 
-def schedule_reminders_for_user(user):
-    assert(len(user.reminders)==1)
-    schedule_reminder(user.reminders[0])
-def schedule_reminder(reminder):
+def next_scheduled_time(start_time, end_time, days, frequency_per_day, current_datetime):
+    #import pdb;pdb.set_trace()
     import random
-    delay = timedelta_times(reminder.frequency, random.expovariate(1))
-    scheduled_time=datetime.utcnow()+delay
-    print(delay)
-    #print(datetime.utcnow())
+    days = days_as_array(days)
+    daily_duration = end_time - start_time
+    avg_interval = daily_duration / frequency_per_day
+    delay_interval = random.expovariate(1) * avg_interval
+
+    current_seconds = current_datetime.second + current_datetime.minute * 60 + current_datetime.hour * 3600
+    current_date = datetime.combine(current_datetime.date(), dt.time())
+    # schedule at the earliest available opportunity if we're outside valid times
+    while not days[current_date.weekday()]: # 
+        current_date += timedelta(days=1)
+        current_seconds = start_time 
+    if not (start_time <= current_seconds <= end_time):
+        current_seconds = start_time 
+
+    delay_days = (current_seconds + delay_interval) // daily_duration
+    post_delay_seconds = ((current_seconds + delay_interval - start_time) % daily_duration) + start_time
+
+    post_delay_date = current_date
+    while delay_days > 0:
+        delay_days -= 1
+        post_delay_date += timedelta(days=1)
+        while not days[post_delay_date.weekday()]:
+            post_delay_date +=timedelta(days=1)
+
+    post_delay_datetime = datetime.combine(post_delay_date, dt.time()) + timedelta(seconds=post_delay_seconds)
+
+    return post_delay_datetime
+    
+def days_as_array(d):
+    #days = Column(Integer) # flag field where    1:sun 2:mon 4:tue 8:wed 16:thur 32:fri 64:sat
+    # datetime.weekday(): monday is 0, sunday is 6
+    # output of this function is an array a, such that a[0] is monday, a[6] is sunday
+    return [ d&2, d&4, d&8, d&16, d&32, d&64, d&1 ] 
+
+def schedule_reminder_time_for_user(reminder_time, user):
+    if user.credit <= 0:
+        print("Nope, not enough credits")
+        return
+    else:
+        user.credit -= 1
+   
+    scheduled_time = next_scheduled_time(reminder_time.start, reminder_time.end, reminder_time.days, reminder_time.frequency, datetime.utcnow())
+    
     print(scheduled_time)
-    #print(reminder.frequency)
-    print(reminder.message)
+    print(reminder_time.reminder.message)
     schedule_message_to_send(
-        body=reminder.message,
-        to=reminder.user.selected_phone.number,
-        time=scheduled_time)
+        body=reminder_time.reminder.message,
+        to=reminder_time.reminder.phone.number,
+        time=scheduled_time,
+        for_reminder_time=reminder_time)
 
 def timedelta_times(td, c):
     return timedelta(seconds=td.total_seconds()*c)
@@ -190,16 +248,3 @@ def send_emails():
 
 server = Server()
 server.debug()
-
-
-def init_db():
-    session = Session()
-    user = User(credit=1000, selected_phone=Phone(number="+15135495690"))
-    user.selected_phone.user = user
-    user.reminders = [Reminder(frequency=timedelta(minutes=1),message="Remember the Alamo",enabled=True)]
-
-    session.add_all([user])
-    session.commit()
-
-#init_db()
-#schedule_message_to_send(body="Testing3", to="+15135495690", from_="+15132015132")
