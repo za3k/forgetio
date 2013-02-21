@@ -48,6 +48,7 @@ class Reminder(Base):
     message = Column(String(160))
     createdAt = Column(DateTime)
     updatedAt = Column(DateTime)
+    error = Column(String)
    
     user = relationship("User", backref='reminders', order_by=id)
     children = relationship("Reminder", backref=backref("parent", remote_side=[id]))

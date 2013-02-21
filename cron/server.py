@@ -111,17 +111,18 @@ def send_scheduled_message(message):
     params = {"From":message.from_, "To":message.to, "Body":message.body, "ApplicationSid":"AP2a7be4e2e9b347d09de7fe35a8117804"}
     json_bytes = post(url, params, user=account, password=token)
     res = json.loads(json_bytes.decode("utf-8"))
+    message.twilio_status = res["status"]
+    if "message" in res and res["status"] == 400:
+        message.cancelled = True
+        reminder.user.credit += 1
+        message.sent_for_reminder_time.reminder.error = res["message"]
+        return
     from pprint import pprint
     pprint(res)
     
     session = Session()
-    assert(res["account_sid"]==account)
-    assert(res["from"]==message.from_)
-    assert(res["to"]==message.to)
-    assert(res["body"]==message.body)
     message.twilio_id = res["sid"]
     message.server_sent = server_sent_time
-    message.twilio_status = res["status"]
     message.api_version = res["api_version"]
     message.twilio_uri = res["uri"]
 

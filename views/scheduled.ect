@@ -1,6 +1,7 @@
 <% extend 'layout.ect' %>
   <% for reminder in @reminders : %>
     <div class="well reminder">
+      <% if reminder.error? and reminder.error != "" : %><div class="alert alert-error"><%= reminder.error %></div><% end %>
       <form method="post" action="/scheduled.html">
         Message: <input type="text" class="input-block-level message" value="<%= reminder.message %>"/><br />
         <% if reminder.id? : %><input type="hidden" class="id" value="<%= reminder.id %>"/><% end %>

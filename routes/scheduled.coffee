@@ -26,6 +26,7 @@ getRemindersForUser = (user, cb) ->
             version: r.version
             parentId: r.parentId
             times: []
+            error: r.error
           }
           reminder_steps = [
             (step2, err) ->
