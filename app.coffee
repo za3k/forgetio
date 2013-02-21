@@ -74,6 +74,7 @@ app.post('/signup.html', routes.signupPost)
 app.all('*.html', routes.ensureLogin) # everything below this requires login
 app.get('/account.html', routes.account)
 app.post('/account.html', routes.accountPost)
+app.post('/payment.html', routes.paymentPost)
 app.get('/scheduled.html', routes.scheduled)
 app.post('/scheduled.html', routes.scheduledPost)
 app.get('/results.html', routes.results)

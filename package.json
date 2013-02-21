@@ -22,6 +22,7 @@
     "less":">= 1.3.3",
     "validator":">= 0.4.24",
     "password-hash":">= 1.2.1",
-    "connect-compiler":"https://github.com/freethenation/connect-compiler/tarball/master"
+    "connect-compiler":"https://github.com/freethenation/connect-compiler/tarball/master",
+    "stripe":">= 1.3.0"
   }
 }

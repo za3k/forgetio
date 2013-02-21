@@ -15,6 +15,7 @@ module.exports.getCommunication = (user, cb) ->
           else
             cb err, result.rows.filter (x) -> x.user_id == user.id
 
+
 Sequelize = require("sequelize")
 sequelize = new Sequelize('notify','postgres','brinksucksballs', {
     host:nconf.get("dbHost")
@@ -37,6 +38,8 @@ define = (name, dbname, options)->
     extern(name, tmp)
     return tmp
 
+module.exports.chainer = sequelize.queryChainer
+
 # Actual Model Starts Here
 Phone = define('Phone', 'phones', {
     id:defaultID
@@ -50,6 +53,15 @@ User = define('User', 'users', {
     name:{ type:Sequelize.STRING }
     email:{ type:Sequelize.STRING, allowNull:false}
     password:{ type:Sequelize.STRING, allowNull:false }
+})
+
+UserPayment = define('UserPayment', 'user_payments', {
+    id:defaultID
+    credit:{ type:Sequelize.INTEGER } # in messages
+    money:{ type:Sequelize.INTEGER } # in cents
+    stripe_fee:{ type:Sequelize.INTEGER } # in cents
+    stripe_token:{ type:Sequelize.STRING }
+    stripe_charge:{ type:Sequelize.STRING }
 })
 
 #Enable once needed

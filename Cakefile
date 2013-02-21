@@ -9,7 +9,7 @@ logger = common.logger
 
 createDbDropSteps= ()->
     return common.flatten [
-        for table in ["users", "reminders", "phones", "reminder_times", "sent_messages", "received_messages", "timezones"]
+        for table in ["users", "user_payments", "reminders", "phones", "reminder_times", "sent_messages", "received_messages", "timezones"]
           do (table) ->
             (step, err)->
               childProcess.exec 'psql notify -c "DROP TABLE ' + table + ' CASCADE;"', (error, stdout, stderr) ->

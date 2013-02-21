@@ -25,7 +25,7 @@ class Phone(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, autoincrement='ignore_fk')
+    id = Column(Integer, primary_key=True)
     credit = Column(Integer) # in messages
     name = Column(String)
     email = Column(String)
@@ -35,6 +35,18 @@ class User(Base):
     updatedAt = Column(DateTime)
 
     timezone = relationship("Timezone")
+
+class UserPayments(Base):
+    __tablename__ = 'user_payments'
+
+    id = Column(Integer, primary_key=True)
+    credit = Column(Integer)
+    money = Column(Integer) # in cents
+    stripe_token = Column(String)
+    stripe_charge = Column(String)
+    stripe_fee = Column(Integer)
+    createdAt = Column(DateTime)
+    updatedAt = Column(DateTime)
 
 class Reminder(Base):
     __tablename__ = 'reminders'

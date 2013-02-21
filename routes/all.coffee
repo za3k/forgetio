@@ -1,8 +1,8 @@
 account = require('./account')
 home = require('./home')
 login = require('./login')
+payment = require('./payment')
 results = require('./results')
-login = require('./login')
 scheduled = require('./scheduled')
 signup = require('./signup')
 
@@ -16,6 +16,7 @@ exports.login = login.login
 exports.loginPost = login.loginPost
 exports.logout = login.logout
 exports.results = results.results
+exports.paymentPost = payment.paymentPost
 exports.scheduled = scheduled.scheduled
 exports.scheduledPost = scheduled.scheduledPost
 exports.signup = signup.signup
