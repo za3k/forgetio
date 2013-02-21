@@ -152,7 +152,7 @@ class Server():
         self.started=server
         return self.started
     def debug(self):
-        self.start_server(debug=True, port=8080)
+        self.start_server(debug=True, port=9002)
         while 1:
             self.periodic_tasks()
             time.sleep(5)

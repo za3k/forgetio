@@ -12,7 +12,7 @@ nconf = require('nconf')
 nconf.env().argv() # process.env and process.argv
 nconf.file('config.json')
 nconf.defaults({
-    httpPort:3001
+    httpPort:9001
     debug:true
     logFile:'notify.log'
     dbPort:5432
