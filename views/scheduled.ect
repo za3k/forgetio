@@ -17,7 +17,7 @@
               <td>
                 <span>
                   <div class="well checkbox-toggles valign-remove-margins<% if !time.enabled : %> muted<% end %>" style="margin-left: 20px">
-                    <input type="text" value="<%= time.frequency %>" class="input-mini frequency" /> times per day <b>every day</b> between <select class="input-time-of-day start-time"><% for tdde in @beginTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.start : %> selected<% end %>><%= tdde.text %></option><% end %></select> and <select class="input-time-of-day end-time"><% for tdde in @endTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.end : %> selected<% end %>><%= tdde.text %></option><% end %></select><br />
+                    <input type="text" value="<%= time.frequency %>" class="input-mini frequency" /> times per day (on average) between <select class="input-time-of-day start-time"><% for tdde in @beginTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.start : %> selected<% end %>><%= tdde.text %></option><% end %></select> and <select class="input-time-of-day end-time"><% for tdde in @endTimesOfDay : %><option value="<%- tdde.value %>"<% if tdde.value == time.end : %> selected<% end %>><%= tdde.text %></option><% end %></select><br />
                     <% for day in @daysOfWeek : %>
                     <label class="checkbox inline day"><input type="checkbox" name="<%= day %>"<% if day in time.days : %> checked<% end %>/> <%- day %></label>
                     <% end %>
