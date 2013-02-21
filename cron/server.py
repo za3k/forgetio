@@ -56,7 +56,8 @@ def receive_sms(sms):
     # Find the last sent message before this one -- that's what this is in response to.
     query = session.query(SentMessage).filter(SentMessage.server_sent < message.server_received)
     in_response_to = query.order_by(desc(SentMessage.server_sent)).first()
-    message.in_response_to = in_response_to.id
+    if in_reponse_to:
+        message.in_response_to = in_response_to.id
     message.was_processed_after_received = True
     session.add(message)
     session.commit()
