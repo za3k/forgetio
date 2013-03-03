@@ -23,15 +23,6 @@ routeCommonConfig = (req, res, next) ->
     req.config = common.ectConfig
     next()
 
-# handle ALL THE ERRORS
-errorMiddleware = (req, res, next)->
-  try
-    next()
-  catch
-    logger.error(err.stack)
-    res.send(500, 'Somthing went quite wrong!')
-        
-
 # create compiler
 compiler = require('connect-compiler')({
     enabled:['snockets','less']
@@ -42,6 +33,13 @@ compiler = require('connect-compiler')({
         less:{paths:["./assets/bootstrap/css","./assets/css"],compress:!nconf.get("debug")}
     }
 })
+
+errorHandler = (err, req, res, next)-> # Handle any unhandled errors
+  if err
+      logger.error(err.stack)
+      res.send(500, 'Somthing went quite wrong!')
+      # res.redirect(500, "500")
+  else next(err)
 
 # create app
 app = express()
@@ -64,12 +62,7 @@ app.configure(()->
     app.use(app.router)
     app.use(compiler)
     app.use(express.static(path.join(__dirname, 'public')))
-    app.use((err, req, res, next)-> # Handle any unhandled errors
-        if err
-            logger.error(err.stack)
-            res.send(500, 'Somthing went quite wrong!')
-            # res.redirect(500, "500")
-        else next()
+    app.use(errorHandler)
     )
 )
 logger.debug('App Configured!')
