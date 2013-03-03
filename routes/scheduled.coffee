@@ -1,6 +1,8 @@
 transaction = require('../database/trans')
 common = require('../common')
 funcflow = require('funcflow')
+check = require('validator').check
+sanitize = require('validator').sanitize
 
 emptyTime = {
   enabled: false
@@ -81,29 +83,75 @@ getRemindersForUser = (user, cb) ->
   funcflow(steps, {errHandler: errHandler, cb: cb, user: user}, last)
 
 putReminderForUser = (reminder, user, success, failure) ->
-  reminder.user_id = user.id
-  console.log("Putting reminder: " + reminder)
-  for time in reminder.times
-    time.start = time.start * 60 * 60 # seconds since midnight
-    time.end = time.end * 60 * 60
-    time.days = (x in time.days for x in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
-    #time.frequency = Math.round(time.frequency) #hack, change to float
-    d = 0
-    while time.days.length > 0
-      d *= 2
-      d += time.days.pop()
-    time.days = d
-  reminder.times = reminder.times.filter (time) ->
-    if !time.frequency
-        return false
-    return true
-  if !reminder.message or reminder.message == ""
-    failure("Message was blank")
-  if !reminder.phone or reminder.phone == ""
-    failure("Phone number was blank")
-    
-  trans = transaction.createSaveReminderTran(reminder)
-  transaction.runTran(trans, success)
+  steps = [
+    (step, err) ->
+      if err then step.errHandler(err); return
+      console.log("Putting reminder: " + step.reminder)
+      step.next()
+    (step, err) ->
+      if err then step.errHandler(err); return
+      step.reminder.user_id = step.user.id
+      step.next()
+    (step, err) ->
+      if err then step.errHandler(err); return
+      check(reminder.message,"Message was blank").notEmpty()
+      check(reminder.phone, "Phone number was blank").len(7,64)
+      step.next()
+    (step) ->
+      reminder.times = reminder.times.filter (time) ->
+        if !time.frequency
+            return false
+        return true
+      step.next()
+    (step, err) ->
+      if err then step.errHandler(err); return
+      process_times = (time, cb) ->
+        substeps = [
+            (substep, err) ->
+              if err then substep.errHandler(err); return
+              substep.time.start = substep.time.start * 60 * 60 # seconds since midnight
+              substep.next()
+            (substep, err) ->
+              if err then substep.errHandler(err); return
+              substep.time.end = substep.time.end * 60 * 60
+              substep.next()
+            (substep, err) ->
+              if err then substep.errHandler(err); return
+              substep.time.days = (x in substep.time.days for x in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
+              d = 0
+              while substep.time.days.length > 0
+                d *= 2
+                d += substep.time.days.pop()
+              substep.time.days = d
+              substep.next()
+            (substep, err) ->
+              if err then step.errHandler(err); return
+              check(substep.time.frequency, "Please enter a number for frequency").notEmpty().isDecimal()
+              substep.next()
+            (substep, err) ->
+              if err then step.errHandler(err); return
+              substep.next()
+        ]
+        funcflow(substeps, {time:time, errHandler: step.errHandler}, cb)
+      for time in reminder.times
+        if time.frequency != ""
+          process_times time, step.spawn()
+      step.next()
+    (step, err) ->
+      if err then step.errHandler(err); return
+      step.next()
+  ]
+   
+  errHandler = (err) ->
+    console.log("There was an error")
+    if err?.message
+      err = err.message
+    console.log(err)
+    failure(err)
+  last = (step) ->
+    trans = transaction.createSaveReminderTran(step.reminder)
+    transaction.runTran(trans, success)
+  funcflow(steps, {errHandler: errHandler, user: user, reminder: reminder}, last)
 
 exports.scheduled = (req, res, data) ->
   common.getUser(req).success (user) ->

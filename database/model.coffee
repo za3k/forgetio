@@ -78,7 +78,7 @@ Reminder = define('Reminder', 'reminders', {
 ReminderTime = define('ReminderTime', 'reminder_times', {
     start:{ type:Sequelize.INTEGER, allowNull:false } # in seconds since midnight
     end:{ type:Sequelize.INTEGER, allowNull:false }
-    frequency:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 }
+    frequency:{ type:Sequelize.FLOAT, allowNull:false, defaultValue:0 }
     days:{ type:Sequelize.INTEGER, allowNull:false, defaultValue:0 } # flag field where    1:sun 2:mon 4:tue 8:wed 16:thur 32:fri 64:sat
 },{
     instanceMethods: {

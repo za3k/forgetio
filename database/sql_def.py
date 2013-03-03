@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, ForeignKey, ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Interval, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float #,Interval
 
 engine = create_engine('postgresql://localhost/notify', echo=True)
 Base = declarative_base()
@@ -56,7 +56,7 @@ class Reminder(Base):
     parent_id = Column(Integer, ForeignKey('reminders.id'))
     user_id = Column(Integer, ForeignKey('users.id'))
     phone_id = Column(Integer, ForeignKey('phones.id'))
-    frequency = Column(Interval)
+    #frequency = Column(Interval)
     message = Column(String(160))
     createdAt = Column(DateTime)
     updatedAt = Column(DateTime)
@@ -72,7 +72,7 @@ class ReminderTime(Base):
     id = Column(Integer, primary_key=True)
     start = Column(Integer) # seconds since midnight
     end = Column(Integer) # seconds since midnight
-    frequency = Column(Integer)
+    frequency = Column(Float)
     days = Column(Integer) # flag field where    1:sun 2:mon 4:tue 8:wed 16:thur 32:fri 64:sat
     reminder_id = Column(Integer, ForeignKey('reminders.id'))
     createdAt = Column(DateTime)
