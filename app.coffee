@@ -23,6 +23,15 @@ routeCommonConfig = (req, res, next) ->
     req.config = common.ectConfig
     next()
 
+# handle ALL THE ERRORS
+errorMiddleware = (req, res, next)->
+  try
+    next()
+  catch
+    logger.error(err.stack)
+    res.send(500, 'Somthing went quite wrong!')
+        
+
 # create compiler
 compiler = require('connect-compiler')({
     enabled:['snockets','less']
