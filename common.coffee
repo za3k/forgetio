@@ -13,7 +13,7 @@ nconf.env().argv() # process.env and process.argv
 nconf.file('config.json')
 nconf.defaults({
     httpPort:9001
-    debug:true
+    debug:false
     logFile:'notify.log'
     dbPort:5432
     dbHost:'127.0.0.1'

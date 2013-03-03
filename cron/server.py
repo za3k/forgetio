@@ -56,7 +56,7 @@ def receive_sms(sms):
     # Find the last sent message before this one -- that's what this is in response to.
     query = session.query(SentMessage).filter(SentMessage.server_sent < message.server_received)
     in_response_to = query.order_by(desc(SentMessage.server_sent)).first()
-    if in_reponse_to:
+    if in_response_to:
         message.in_response_to = in_response_to.id
     message.was_processed_after_received = True
     session.add(message)
@@ -203,6 +203,8 @@ def is_latest_reminder(reminder):
 def next_scheduled_time(start_time, end_time, days, frequency_per_day, current_datetime, user_timezone):
     import random
     days = days_as_array(days)
+    if days == [0,0,0,0,0,0,0]:
+       return None
     print(days)
     user_timezone_delta = timedelta(seconds=user_timezone)
     daily_duration = end_time - start_time
@@ -269,6 +271,8 @@ def schedule_reminder_time_for_user(reminder_time, user):
         user.credit -= 1
   
     scheduled_time = next_scheduled_time(reminder_time.start, reminder_time.end, reminder_time.days, reminder_time.frequency, datetime.utcnow(), user.timezone.offset)
+    if scheduled_time is None:
+    	return None
     
     print(scheduled_time)
     print(reminder_time.reminder.message)
