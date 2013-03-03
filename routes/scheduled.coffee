@@ -87,7 +87,7 @@ putReminderForUser = (reminder, user, success, failure) ->
     time.start = time.start * 60 * 60 # seconds since midnight
     time.end = time.end * 60 * 60
     time.days = (x in time.days for x in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
-    time.frequency = Math.round(time.frequency) #hack, change to float
+    #time.frequency = Math.round(time.frequency) #hack, change to float
     d = 0
     while time.days.length > 0
       d *= 2

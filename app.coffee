@@ -63,7 +63,6 @@ app.configure(()->
     app.use(compiler)
     app.use(express.static(path.join(__dirname, 'public')))
     app.use(errorHandler)
-    )
 )
 logger.debug('App Configured!')
 
