@@ -13,11 +13,11 @@ nconf.env().argv() # process.env and process.argv
 nconf.file('config.json')
 nconf.defaults({
     httpPort:9001
-    debug:false
+    debug:true
     logFile:'notify.log'
     dbPort:5432
     dbHost:'127.0.0.1'
-    appName:'Reminder'
+    appName:'Forget'
 })
 module.exports.nconf = nconf
 

@@ -3,7 +3,7 @@ common = require('../common')
 model = require('../database/model')
 funcflow = require('funcflow')
 sanitize = require('validator').sanitize
-stripe = require('stripe')('sk_test_lKNFhC9DPCMd9znQ81CffCgc')
+stripe = require('stripe')('sk_live_fNeG2hpEa8Du0Dc5pYarIHT0')
 routes = require('./all')
 
 exports.account = (req, res, data) ->

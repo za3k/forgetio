@@ -17,7 +17,7 @@ exports.results = (req, res) ->
           if line.server_received
             reminder.replies.push({
               date: line.scheduled
-              reply: {text: line.body, time: line.server_received}
+              reply: {text: line.received_body, time: line.server_received}
             })
           else
             reminder.replies.push({
