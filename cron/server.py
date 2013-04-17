@@ -158,7 +158,7 @@ class Server():
             self.periodic_tasks()
             time.sleep(5)
     def periodic_tasks(self):
-        print("Looking for messages to schedule...")
+        print("Looking for messages to schedulee...")
         schedule_messages()
         print("    Done.")
         print("Looking for messages to send...")
@@ -167,14 +167,17 @@ class Server():
         print()
         print()
         print()
+        print("Sending emails.")
         send_emails()
+        print("Done.")
 
 def schedule_messages():
     '''find users without a scheduled messages and schedule them one'''
     # Let's be realistic -- make this more efficient once we need to.
     session = Session()
+    total_queued_messages = 0
     for user in session.query(User):
-        times = []  
+        times = []
         for reminder in user.reminders:
             if is_latest_reminder(reminder): #latest version of the reminder
               for time in reminder.times:
@@ -187,8 +190,10 @@ def schedule_messages():
                   if queued_messages == 0:
                     schedule_reminder_time_for_user(time, user)
                   print("QUEUED MESSAGES: {}".format(queued_messages))
+                  total_queued_messages += queued_messages
+    print("TOTAL_QUEUED MESSAGES: {}".format(total_queued_messages))
     session.commit()
-
+ 
 def is_latest_reminder(reminder):
     if reminder.parent:
       sibs = reminder.parent.children
@@ -208,6 +213,8 @@ def next_scheduled_time(start_time, end_time, days, frequency_per_day, current_d
     print(days)
     user_timezone_delta = timedelta(seconds=user_timezone)
     daily_duration = end_time - start_time
+    if daily_duration <= 0:
+        return None
     avg_interval = daily_duration / frequency_per_day
     delay_interval = random.expovariate(1) * avg_interval
 
@@ -290,5 +297,7 @@ def send_emails():
     # see if any users should be emailed about their responses (nightly?)
     pass
 
-server = Server()
-server.debug()
+if __name__ == '__main__':
+    print("Starting server.")
+    server = Server()
+    server.debug()
