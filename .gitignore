@@ -2,3 +2,5 @@ node_modules
 notify.log
 public/js
 __pycache__
+app.log
+log.err
