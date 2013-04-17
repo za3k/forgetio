@@ -17,13 +17,13 @@ nconf.defaults({
     logFile:'notify.log'
     dbPort:5432
     dbHost:'127.0.0.1'
-    appName:'Forget'
+    appName:'Reminder'
 })
 module.exports.nconf = nconf
 
 # setup logger
 logger = require('winston')
-logger.add(logger.transports.File, { filename: nconf.get('logFile'), handleExceptions:!nconf.get('debug'), exitOnError: false })
+logger.add(logger.transports.File, { filename: nconf.get('logFile'), handleExceptions:true, exitOnError: !nconf.get('debug') })
 logger.debug('Logger Initialized!')
 module.exports.logger = logger
 
