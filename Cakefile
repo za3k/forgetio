@@ -57,14 +57,37 @@ createCompileCoffeeSteps=(min)->
             funcflow(common.flatten(createCompileSteps('./public/' + f) for f in files), {catchExceptions:false}, step.next)
     ]
     
+runFrontend=()->
+    return [
+        (step, err)->
+          childProcess.exec 'forever -c coffee app.coffee 2>&1 | tee -a app.log', (error, stdout, stderr) ->
+            console.log(stdout)
+            console.log(stderr)
+            if error
+              common.logger.error(error)
+            step.next()
+    ]
 
-job = (name, desc="", steps, callback=(err)->if err? then logger.error(err.stacktrace))->
+runPythonScript=()->
+    return [
+        (step, err)->
+          childProcess.exec 'python cron/server.py', (error, stdout, stderr) ->
+            console.log(stdout)
+            console.log(stderr)
+            if error
+              common.logger.error(error)
+            step.next()
+    ]
+
+job = (name, desc= "", steps, callback=(err)->if err? then logger.error(err.stacktrace))->
     task(name, desc, (options)->funcflow(flatten(steps, {catchExceptions:false, "options":options}, callback)))
 
 job 'db:drop', 'drops the database', createDbDropSteps()
 job 'db:sync', 'drops and recreates the database', createDbCreateSteps()
 job 'build', 'compiles all client side coffee script', createCompileCoffeeSteps(false)
 job 'build:min', 'compiles and minifies all client side coffee script', createCompileCoffeeSteps(true)
+job 'python:run', 'runs the cron-job python script', runPythonScript()
+job 'coffee:run', 'runs the GUI server', runFrontend()
 
 
 # util methods
