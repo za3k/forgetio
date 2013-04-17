@@ -34,6 +34,14 @@ compiler = require('connect-compiler')({
     }
 })
 
+beforeLogger = (req, res, next)->
+    logger.info("request begun", {request : req})
+    next()
+
+afterLogger = (req, res, next)->
+    logger.log("response sent", {request: req, response: res})
+    next()
+
 errorHandler = (err, req, res, next)-> # Handle any unhandled errors
   if err
       logger.error(err.stack)
@@ -57,9 +65,11 @@ app.configure(()->
     app.use(express.methodOverride())
     app.use(express.cookieParser('braSP8pUpR5XuDapHAT9e87ecHUtHufr'))
     app.use(express.cookieSession({cookie: { maxAge: 60 * 60 * 1000 }}))
+    app.use(beforeLogger)
     app.use(routeCommonConfig)
     app.use(loginUtilMiddleware)
     app.use(app.router)
+    app.use(afterLogger)
     app.use(compiler)
     app.use(express.static(path.join(__dirname, 'public')))
     app.use(errorHandler)
