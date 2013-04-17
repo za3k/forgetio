@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 
 import sys
-sys.path.append('./../database/')
+sys.path.append('./database/')
 from sql_def import User, Phone, Reminder, SentMessage, ReceivedMessage
 
 import json
