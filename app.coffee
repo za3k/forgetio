@@ -39,7 +39,7 @@ beforeLogger = (req, res, next)->
     next()
 
 afterLogger = (req, res, next)->
-    logger.log("response sent", {request: req, response: res})
+    logger.info("response sent", {request: req, response: res})
     next()
 
 errorHandler = (err, req, res, next)-> # Handle any unhandled errors

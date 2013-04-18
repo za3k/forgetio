@@ -13,7 +13,7 @@ nconf.env().argv() # process.env and process.argv
 nconf.file('config.json')
 nconf.defaults({
     httpPort:9001
-    debug:true
+    debug:false
     logFile:'notify.log'
     dbPort:5432
     dbHost:'127.0.0.1'
@@ -23,7 +23,13 @@ module.exports.nconf = nconf
 
 # setup logger
 logger = require('winston')
-logger.add(logger.transports.File, { filename: nconf.get('logFile'), handleExceptions:true, exitOnError: !nconf.get('debug') })
+logger.add logger.transports.File, 
+    filename: nconf.get('logFile'), 
+    handleExceptions:true, 
+    exitOnError:true
+logger.remove logger.transports.Console
+logger.add logger.transports.Console,
+    level: "info"
 logger.debug('Logger Initialized!')
 module.exports.logger = logger
 
