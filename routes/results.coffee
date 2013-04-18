@@ -41,6 +41,7 @@ exports.csvExport = (req, res) ->
         lines = common._.filter lines, (x) -> x.reminder_id.toString() == req.params.id
         console.log(lines)
       if (not req.params.id and lines) or (req.params.id and lines and lines.length > 0)
+        res.type('text/plain')
         res.render('csv.results.ect', {
           req: req
           lines: lines
