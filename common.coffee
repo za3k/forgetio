@@ -1,5 +1,3 @@
-#debugger;
-
 # patch Date object to support time zones
 require('time')(Date)
 
@@ -46,12 +44,15 @@ model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
     
     module.exports.ectConfig.timezones = timezones
 )
+module.exports.ectConfig.appName = nconf.get('appName')
 
 offsetDisplayName = (offset, text) ->
     if offset == 0
         text
     else
         {hours, minutes} = offsetToHoursAndMinutes offset
+        if minutes < 10
+            minutes = "0#{minutes}"
         "(UTC #{ hours }:#{ minutes }) #{ text }"
 
 offsetToHoursAndMinutes = (offset) ->
@@ -92,5 +93,3 @@ module.exports.timesOfDay = (
 
 module.exports.getUser = (req) ->
     model.User.find({where: {id: req.user.userId()}})
-
-module.exports.ectConfig.appName = nconf.get('appName')

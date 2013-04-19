@@ -1,12 +1,12 @@
 check = require('validator').check
 common = require('../common')
 model = require('../database/model')
-funcflow = require('funcflow')
+ctrl = require('ctrl')
 sanitize = require('validator').sanitize
 
 exports.account = (req, res, data) ->
-  u = req.user.getUser()
-  model.getCommunication u, (err, result) ->
+  user = req.user.getUser()
+  model.getCommunication user, (err, result) ->
     if err
       common.logger.error err
     all = common._.pluck(result, 'server_received')
@@ -17,12 +17,12 @@ exports.account = (req, res, data) ->
       user: {
         messagesReceived: result_present.length
         messagesSent: all.length - result_present.length
-        timezone: u.timezone_id
-        name: u.name
-        credits: u.credit
-        email: u.email
-        lowerTimeEstimate: u.credit / 10
-        upperTimeEstimate: u.credit / 5
+        timezone: user.timezone_id
+        name: user.name
+        credits: user.credit
+        email: user.email
+        lowerTimeEstimate: user.credit / 10
+        upperTimeEstimate: user.credit / 5
       }
       warningLevel: (daysLeft) ->
           if daysLeft < 1
@@ -35,20 +35,18 @@ exports.account = (req, res, data) ->
 exports.accountPost = (req, res) ->
     json = req.body
     user = req.user.getUser()
-    steps = [(step, err)->
-      if err then step.errorHandler(err); return
+    steps = [(step)->
       if json.timezone == user.timezone_id
         exports.account(req, res)
       check(json.timezone, 'Timezone is invalid!').isInt()
-      step.next(sanitize(json.timezone).toInt())
-    (step, err, timezone)->
-      if err then step.errorHandler(err); return
-      user.timezone_id =  timezone
+      step.data.timezone = sanitize(json.timezone).toInt()
+      step.next()
+    (step)->
+      user.timezone_id =  step.data.timezone
       user.save().success(step.next).failure((err)->
         common.logger.error("Error saving user's timezone", err)
-        step.errorHandler({message:"There was a server error!"}))
-    (step, err)->
-      if err then step.errorHandler(err); return
+        throw {message:"There was a server error!"})
+    (step)->
       exports.account(req, res)
       step.next()
     ]
@@ -56,4 +54,4 @@ exports.accountPost = (req, res) ->
       json.errorMsg =  if error?.message? then error.message else error.toString()
       common.logger.error(json.errorMsg)
       exports.account(req, res, json)
-    funcflow(steps, {errorHandler:errorHandler},()->{})
+    ctrl(steps, {errorHandler:errorHandler},()->{})

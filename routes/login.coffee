@@ -1,5 +1,5 @@
 common = require('../common')
-funcflow = require('funcflow')
+ctrl = require('ctrl')
 model = require('../database/model')
 sanitize = require('validator').sanitize
 
@@ -7,46 +7,46 @@ exports.login = (req,res,data) ->
   res.render('home.ect', common.extend({ page: 'Login', req:req }, data))
 exports.loginPost = (req, res) ->
   json = req.body
-  console.log(json)
-  steps = [(step, err) ->
-    if err? then step.errorHandler(err); return
+  console.log(json?.email)
+  steps = [(step) ->
+    console.log("Step 1")
     if !json.email? or json.email == ""
-      step.errorHandler("Please include an email address"); return
+      throw "Please include an email address"
     if !json.password? or json.password == ""
-      step.errorHandler("Please include a password"); return
+      throw "Please include a password"
     step.next()
-  (step, err) ->
-    if err? then step.errorHandler(err); return
-    model.User.find({where: {email: json.email}}).success(step.next).failure((err) ->
+  (step) ->
+    model.User.find({where: {email: json.email}}).success((user) ->
+      step.data.user = user
+      step.next()
+    ).failure((err) ->
       common.logger.error(err)
-      errorHandler("There was a server error"))
-  (step, err, user) ->
-    if err? then step.errorHandler(err); return
-    if !user?
-      console.log("Invalid user")
-      errorHandler("Invalid username or password."); return
-    if user.email != json.email
+      throw "There was a server error")
+  (step) ->
+    if !step.data.user?
+      common.logger.info("Invalid user")
+      throw "Invalid username or password."
+    if step.data.user.email != json.email
       common.logger.error("Returned user had the wrong email")
-      errorHandler("There was an error on the server."); return
-    step.next(user)
-  (step, err, user) ->
-    if err? then step.errorHandler(err); return
-    if !require('password-hash').verify(sanitize(json.password.toLowerCase()).trim(), user.password)
-      console.log("Invalid password")
-      errorHandler("Invalid username or password."); return
-    step.next(user)
-  (step, err, user) ->
-    if err? then step.errorHandler(err); return
-    req.user.login user
+      throw "There was an error on the server."
+    step.next()
+  (step) ->
+    if !require('password-hash').verify(sanitize(json.password.toLowerCase()).trim(), step.data.user.password)
+      common.logger.info("Invalid password")
+      throw "Invalid username or password."
+    step.next()
+  (step) ->
+    req.user.login step.data.user
     step.next()
   ]
-  errorHandler = (error)->
-    json.errorMsg =  if error?.message? then error.message else error.toString()
+  errorHandler = (step, error)->
+
+    json.errorMsg = if error?.message? then error?.message else error.toString()
     common.logger.error(json.errorMsg)
     delete json.password
     exports.login(req, res, json)
-  funcflow(steps, {errorHandler: errorHandler}, () ->
-    res.redirect('/account.html'))
+  afterSuccessfulLogin = () -> res.redirect('/account.html')
+  ctrl(steps, {errorHandler: errorHandler}, afterSuccessfulLogin)
 
 exports.ensureLogin=(req, res, next)->
     if req.user.loggedIn() then next()

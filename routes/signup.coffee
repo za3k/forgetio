@@ -1,7 +1,6 @@
 check = require('validator').check
 common = require('../common')
 model = require('../database/model')
-funcflow = require('funcflow')
 ctrl = require('ctrl')
 sanitize = require('validator').sanitize
 shared = common.shared

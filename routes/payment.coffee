@@ -1,14 +1,15 @@
 check = require('validator').check
 common = require('../common')
 model = require('../database/model')
-funcflow = require('funcflow')
+ctrl = require('ctrl')
 sanitize = require('validator').sanitize
+#stripe = require('stripe')('sk_test_cnma6aLXwZVj28xddzaby1fL')
 stripe = require('stripe')('sk_live_fNeG2hpEa8Du0Dc5pYarIHT0')
 routes = require('./all')
 
 exports.account = (req, res, data) ->
   user = req.user.getUser()
-  model.getCommunication u, (err, result) ->
+  model.getCommunication user, (err, result) ->
     if err
       common.logger.error err
     all = common._.pluck(result, 'server_received')
@@ -19,12 +20,12 @@ exports.account = (req, res, data) ->
       user: {
         messagesReceived: result_present.length
         messagesSent: all.length - result_present.length
-        timezone: u.timezone_id
-        name: u.name
-        credits: u.credit
-        email: u.email
-        lowerTimeEstimate: u.credit / 10
-        upperTimeEstimate: u.credit / 5
+        timezone: user.timezone_id
+        name: user.name
+        credits: user.credit
+        email: user.email
+        lowerTimeEstimate: user.credit / 10
+        upperTimeEstimate: user.credit / 5
       }
       warningLevel: (daysLeft) ->
           if daysLeft < 1
@@ -38,82 +39,86 @@ exports.account = (req, res, data) ->
 exports.paymentPost = (req, res) ->
     json = req.body
     user = req.user.getUser()
-    steps = [(step, err)->
-      if err then step.errorHandler(err) ; return
+    steps = [(step)->
+      common.logger.debug("Make sure form is validly formatted")
       stripe_token = json.stripeToken
       if not stripe_token? or stripe_token == ""
         common.logger.error("Stripe token missing on payment form")
-        step.errorHandler("There was a server error with the form submission.");return
+        throw "There was a server error with the form submission."
       # Make sure credits are validly formatted as an integer >= 50
       check(json.credits).isInt().min(50).max(100000)
-      step.credits = sanitize(json.credits).toInt()
-      step.stripeToken = json.stripeToken
+      step.data.credits = sanitize(json.credits).toInt()
+      step.data.stripeToken = json.stripeToken
       step.next()
-    (step, err)->
-      if err then step.errorHandler(err) ; return
+    (step)->
       # Calculate the correct price
-      step.cost = step.credits * 2
+      common.logger.debug("Calculate the correct price")
+      step.data.cost = step.data.credits * 2
       step.next()
-    (step, err)->
-      if err then step.errorHandler(err) ; return
-      #TODO: Record the token in the database before trying to run the charge
+    (step)->
+      #Record the token in the database before trying to run the charge
+      common.logger.debug("Record the token in the database before trying to run the charge")
       model.UserPayment.create({
-        credit: step.credit
-        money: step.cost
-        stripe_token: step.stripeToken
-      }).success(step.next).failure((err) ->
+        credit: step.data.credits
+        money: step.data.cost
+        stripe_token: step.data.stripeToken
+      }).success((userPayment) ->
+        step.data.userPayment = userPayment
+        step.next()
+      ).failure((err) ->
         common.logger.error(err)
-        step.errorHandler("There was a server error with the form submission.");return
+        throw "There was a server error with the form submission."
       )
-    (step, err, user_payment)->
-      if err then step.errorHandler(err) ; return
-      step.user_payment = user_payment
-      step.next()
-    (step, err)->
-      if err then step.errorHandler(err) ; return
+    (step)->
       # Run the charge
+      common.logger.debug("Run the charge")
       charge = {
-        amount: step.cost
+        amount: step.data.cost
         currency: "usd"
-        card: step.stripeToken
-        description: "Buying " + step.credits + " credits for account: " + step.user.id + " (email: " + step.user.email + ")"
+        card: step.data.stripeToken
+        description: "Buying " + step.data.credits + " credits for account: " + user.id + " (email: " + user.email + ")"
       }
-      stripe.charges.create(charge, step.next)
-    (step, err, err2, response) ->
-      if err then step.errorHandler(err) ; return
-      if err2
-        step.errorHandler(err2) ; return
+      stripe.charges.create charge, (err, response) ->
+        step.data.stripeErr = err
+        step.data.response = response
+        step.next()
+    (step) ->
+      err = step.data.stripeErr
+      if err?
+        throw err
+      step.next()
+    (step) ->
       # Make sure the charge succeeded
-      if not response.paid or not response.paid==true
+      common.logger.debug("Make sure the charge succeded")
+      if not step.data.response.paid or not step.data.response.paid==true
         common.logger.error("Payment declined")
-        step.errorHandler("Payment on this credit card was declined for the given amount.")
-      step.response = response
-      step.next(response.id, response.fee)
-    (step, err, id, fee)->
-      if err then step.errorHandler(err) ; return
+        throw "Payment on this credit card was declined for the given amount."
+      step.data.fee = step.data.response.fee
+      step.data.id = step.data.response.id
+      step.next()
+    (step)->
       # Update the charge entry in the database
+      common.logger.debug("Update the charge entry in the database")
       onFailure = (err) ->
         common.logger.error(err)
-        step.errorHandler("There was a problem procesing the payment. We received the payment but there was a problem crediting your account. Please email tech support at <a mailto:\"vanceza@gmail.com\">vanceza@gmail.com</a>") ; return
-      uu = step.spawn()
-      uc = step.spawn()
-      updateUser = step.user.updateAttributes({
-        credit: step.user.credit + step.credits
-      }).success(uu).failure(onFailure)
+        throw "There was a problem procesing the payment. We received the payment but there was a problem crediting your account. Please email tech support at <a mailto:\"vanceza@gmail.com\">vanceza@gmail.com</a>"
+      updateUser = user.updateAttributes({
+        credit: user.credit + step.data.credits
+      }).success(step.spawn()).failure(onFailure)
 
-      updateCharge = step.user_payment.updateAttributes({
-        stripe_fee: fee
-        stripe_charge: id
-      }).success(uc).failure(onFailure)
+      updateCharge = step.data.userPayment.updateAttributes({
+        stripe_fee: step.data.fee
+        stripe_charge: step.data.id
+      }).success(step.spawn()).failure(onFailure)
 
-      step.next()
-    (step, err)->
       step.next()
     ]
-    errorHandler = (error)->
+    errorHandler = (step, error)->
+      common.logger.debug("errorHandler")
       json.errorMsg =  if error?.message? then error.message else error.toString()
       common.logger.error(json.errorMsg)
       routes.account(req, res, json)
-    funcflow steps, {errorHandler:errorHandler, user:user},(step, err)->
-      json.successMsg = step.credits + " credits were successfully added to your account."
+    afterSuccessfulPayment = (step)->
+      json.successMsg = step.data.credits + " credits were successfully added to your account."
       routes.account(req, res, json)
+    ctrl(steps, {errorHandler:errorHandler}, afterSuccessfulPayment)
