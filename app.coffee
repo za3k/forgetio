@@ -11,12 +11,21 @@ logger = common.logger
 # define some simple middleware
 loginUtilMiddleware = (req, res, next)->
     req.user = {
-        login:(userId)->req.session.UserId = userId
+        login:(user)->req.session.UserId = user.id
         logout:()->req.session=null
         loggedIn:()->req.session?.UserId?
         userId:()->req.session?.UserId
+        fetch:(next) ->
+            common.getUser(req).success( (user) ->
+                req.user._user = user
+                next()
+            ).failure((error) ->
+                logger.error("User not found in loginUtilMiddleware")
+                next(error)
+            )
+        getUser:()->req.user._user
     }
-    next()
+    req.user.fetch(next)
 
 # common route config info
 routeCommonConfig = (req, res, next) ->
@@ -35,11 +44,11 @@ compiler = require('connect-compiler')({
 })
 
 beforeLogger = (req, res, next)->
-    logger.info("request begun", {request : req})
+    #logger.info("request begun", {request : req})
     next()
 
 afterLogger = (req, res, next)->
-    logger.info("response sent", {request: req, response: res})
+    #logger.info("response sent", {request: req, response: res})
     next()
 
 errorHandler = (err, req, res, next)-> # Handle any unhandled errors
@@ -65,9 +74,9 @@ app.configure(()->
     app.use(express.methodOverride())
     app.use(express.cookieParser('braSP8pUpR5XuDapHAT9e87ecHUtHufr'))
     app.use(express.cookieSession({cookie: { maxAge: 60 * 60 * 1000 }}))
-    app.use(beforeLogger)
     app.use(routeCommonConfig)
     app.use(loginUtilMiddleware)
+    app.use(beforeLogger)
     app.use(app.router)
     app.use(afterLogger)
     app.use(compiler)

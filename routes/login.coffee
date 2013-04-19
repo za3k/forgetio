@@ -37,7 +37,7 @@ exports.loginPost = (req, res) ->
     step.next(user)
   (step, err, user) ->
     if err? then step.errorHandler(err); return
-    req.session.UserId = user.id
+    req.user.login user
     step.next()
   ]
   errorHandler = (error)->

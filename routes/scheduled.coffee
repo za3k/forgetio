@@ -154,27 +154,27 @@ putReminderForUser = (reminder, user, success, failure) ->
   funcflow(steps, {errHandler: errHandler, user: user, reminder: reminder}, last)
 
 exports.scheduled = (req, res, data) ->
-  common.getUser(req).success (user) ->
-    getRemindersForUser(user, (reminders) ->
-      for r in reminders
-        r.times.push(emptyTime)
-      reminders.push(emptyReminder)
-      res.render('scheduled.ect', common.extend({
-        req:req
-        page: 'Scheduled'
-        daysOfWeek: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        beginTimesOfDay: common.timesOfDay[...-1]
-        endTimesOfDay: common.timesOfDay[1..]
-        defaultPhone: "+1 (555) 555-5555"
-        reminders: reminders
-      }, data)))
+  user = req.user.getUser()
+  getRemindersForUser(user, (reminders) ->
+    for r in reminders
+      r.times.push(emptyTime)
+    reminders.push(emptyReminder)
+    res.render('scheduled.ect', common.extend({
+      req:req
+      page: 'Scheduled'
+      daysOfWeek: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+      beginTimesOfDay: common.timesOfDay[...-1]
+      endTimesOfDay: common.timesOfDay[1..]
+      defaultPhone: "+1 (555) 555-5555"
+      reminders: reminders
+    }, data)))
 
 exports.scheduledPost = (req, res) ->
-  common.getUser(req).success (user) ->
-    console.log(req.body)
-    json = JSON.parse(req.body.json)
-    for reminder in json.reminders
-      putReminderForUser(reminder, user, () ->
-        exports.scheduled(req, res, {successMsg: "Successfully updated."})
-      (errMsg) ->
-        exports.scheduled(req, res, {errorMsg: errMsg}))
+  req.user.getUser()
+  console.log(req.body)
+  json = JSON.parse(req.body.json)
+  for reminder in json.reminders
+    putReminderForUser(reminder, user, () ->
+      exports.scheduled(req, res, {successMsg: "Successfully updated."})
+    (errMsg) ->
+      exports.scheduled(req, res, {errorMsg: errMsg}))

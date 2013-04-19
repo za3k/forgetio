@@ -7,48 +7,38 @@ stripe = require('stripe')('sk_live_fNeG2hpEa8Du0Dc5pYarIHT0')
 routes = require('./all')
 
 exports.account = (req, res, data) ->
-  common.getUser(req).success((u) ->
-    model.getCommunication u, (err, result) ->
-      if err
-        common.logger.error err
-      all = common._.pluck(result, 'server_received')
-      result_present = common._.compact(all)
-      res.render('account.ect', common.extend({
-        page: 'Account'
-        req:req
-        user: {
-          messagesReceived: result_present.length
-          messagesSent: all.length - result_present.length
-          timezone: u.timezone_id
-          name: u.name
-          credits: u.credit
-          email: u.email
-          lowerTimeEstimate: u.credit / 10
-          upperTimeEstimate: u.credit / 5
-        }
-        warningLevel: (daysLeft) ->
-            if daysLeft < 1
-                "alert alert-error"
-            else if 1 <= daysLeft < 7
-                "alert"
-            else
-                "alert alert-info"
-      }, data))
-  ).failure((err) ->
-      console.log(err)
-      res.render('account.ect', {
-        errMsg: "User not found. Please log in."
-      })
-    )
+  user = req.user.getUser()
+  model.getCommunication u, (err, result) ->
+    if err
+      common.logger.error err
+    all = common._.pluck(result, 'server_received')
+    result_present = common._.compact(all)
+    res.render('account.ect', common.extend({
+      page: 'Account'
+      req:req
+      user: {
+        messagesReceived: result_present.length
+        messagesSent: all.length - result_present.length
+        timezone: u.timezone_id
+        name: u.name
+        credits: u.credit
+        email: u.email
+        lowerTimeEstimate: u.credit / 10
+        upperTimeEstimate: u.credit / 5
+      }
+      warningLevel: (daysLeft) ->
+          if daysLeft < 1
+              "alert alert-error"
+          else if 1 <= daysLeft < 7
+              "alert"
+          else
+              "alert alert-info"
+    }, data))
 
 exports.paymentPost = (req, res) ->
     json = req.body
-    steps = [(step, err)->
-      if err then step.errorHandler(err) ; return
-      common.getUser(req).success((user)->
-        step.user = user
-        step.next()
-      ).failure((err)->step.raise(err))
+    user = req.user.getUser()
+    steps = [
     (step, err)->
       if err then step.errorHandler(err) ; return
       stripe_token = json.stripeToken
@@ -125,6 +115,6 @@ exports.paymentPost = (req, res) ->
       json.errorMsg =  if error?.message? then error.message else error.toString()
       common.logger.error(json.errorMsg)
       routes.account(req, res, json)
-    funcflow steps, {errorHandler:errorHandler},(step, err)->
+    funcflow steps, {errorHandler:errorHandler, user:user},(step, err)->
       json.successMsg = step.credits + " credits were successfully added to your account."
       routes.account(req, res, json)
