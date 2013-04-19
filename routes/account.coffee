@@ -5,7 +5,7 @@ funcflow = require('funcflow')
 sanitize = require('validator').sanitize
 
 exports.account = (req, res, data) ->
-  user = req.user.getUser()
+  u = req.user.getUser()
   model.getCommunication u, (err, result) ->
     if err
       common.logger.error err

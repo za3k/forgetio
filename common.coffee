@@ -1,3 +1,5 @@
+#debugger;
+
 # patch Date object to support time zones
 require('time')(Date)
 
@@ -54,31 +56,37 @@ offsetDisplayName = (offset, text) ->
 
 offsetToHoursAndMinutes = (offset) ->
     if offset == 0
-        return
+        {
             hours: 0
             minutes: 0
+        }
     else if (offset % 3600) == 0
-        return
+        {
             hours: offset / 3600
             minutes: 0
+        }
     else
         hours = Math.floor(offset / 3600) if offset > 0
         hours = Math.ceil(offset / 3600) if offset < 0
-        return
+        {
             hours: hours
             minutes: Math.floor(Math.abs((offset % 3600) / 60))
+        }
+
+timeOfDayDisplayName = (timeOfDay) ->
+    if v in [0, 24]
+        "Midnight"
+    else if v == 12
+        "Noon"
+    else if v < 12
+        "#{v}:00am"
+    else
+        "#{v-12}:00pm"
 
 module.exports.timesOfDay = (
     {
         value: v
-        text: if v in [0, 24]
-            "Midnight"
-        else if v == 12
-            "Noon"
-        else if v < 12
-            "#{v}:00am"
-        else
-            "#{v-12}:00pm"
+        text: timeOfDayDisplayName v
     } for v in [0..24]
 )
 

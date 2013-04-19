@@ -2,6 +2,7 @@ check = require('validator').check
 common = require('../common')
 model = require('../database/model')
 funcflow = require('funcflow')
+ctrl = require('ctrl')
 sanitize = require('validator').sanitize
 shared = common.shared
 
@@ -13,7 +14,7 @@ signup = (req, res, data={})->
 exports.signup=(req, res)->signup(req,res)
 exports.signupPost = (req, res) ->
     json = req.body
-    steps = [(step,err)->
+    steps = [(step)->
         json.timezone_id = json.TimeZoneId
         delete json.TimeZoneId
         # validate the data
@@ -27,31 +28,34 @@ exports.signupPost = (req, res) ->
         json.name = sanitize(json.name).trim()
         json.timezone_id = sanitize(json.timezone_id).toInt()
         step.next()
-    (step,err)->
-        if err then step.errorHandler(err); return
+    (step)->
         # check if email already exists
         model.User.find({where:{email:json.email}})
-            .success(step.next)
-            .error((err)->
+            .success((user) ->
+                step.data.user = user
+                step.next()
+            ).error((err)->
                 common.logger.error("Error retrieving user by email", err)
-                step.errorHandler({message:"There was a server error!"}))
-    (step,err,user)->
-        if user? then step.errorHandler({message:"A user with that email already exists!"}); return
+                throw {message:"There was a server error!"})
+    (step)->
+        if user? then throw {message:"A user with that email already exists!"}
         # save the new user!
         user = model.User.build(json)
         console.dir(user)
         user.save()
-            .success(()->step.next(user))
+            .success(step.next)
             .error((err)->
                 common.logger.error("Error saving user", err)
-                step.errorHandler({message:"There was a server error!"}))
-    (step,err,user)->
+                throw {message:"There was a server error!"})
+    (step)->
         # log the user in!
-        req.session.UserId = user.id
+        req.session.UserId = step.data.user.id
         step.next()
     ]
     errorHandler = (error)->
         delete json.password
         json.errorMsg =  if error?.message? then error.message else error.toString()
         signup(req, res, json)
-    funcflow(steps, {errorHandler:errorHandler},()->res.redirect('/scheduled.html'))
+    loginSuccess = ()-> 
+        res.redirect('/scheduled.html')
+    ctrl(steps, {errorHandler:errorHandler}, loginSuccess)

@@ -1,1 +1,0 @@
-bob = ()->console.log "here"

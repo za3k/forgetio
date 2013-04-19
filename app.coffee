@@ -53,9 +53,9 @@ afterLogger = (req, res, next)->
 
 errorHandler = (err, req, res, next)-> # Handle any unhandled errors
   if err
-      logger.error(err.stack)
-      res.send(500, 'Somthing went quite wrong!')
-      # res.redirect(500, "500")
+    logger.error(err.stack)
+    res.send(500, 'Something went quite wrong!')
+    # res.redirect(500, "500")
   else next(err)
 
 # create app

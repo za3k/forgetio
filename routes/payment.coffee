@@ -38,8 +38,7 @@ exports.account = (req, res, data) ->
 exports.paymentPost = (req, res) ->
     json = req.body
     user = req.user.getUser()
-    steps = [
-    (step, err)->
+    steps = [(step, err)->
       if err then step.errorHandler(err) ; return
       stripe_token = json.stripeToken
       if not stripe_token? or stripe_token == ""
