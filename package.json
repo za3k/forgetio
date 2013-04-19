@@ -25,6 +25,7 @@
     "connect-compiler":"https://github.com/freethenation/connect-compiler/tarball/master",
     "stripe":">= 0.0.1",
     "pretty-assert": ">= 0.0.1",
-    "ctrl":"*"
+    "sinon": ">= 1.6.0",
+    "ctrl":">= 0.0.1"
   }
 }

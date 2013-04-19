@@ -56,11 +56,11 @@ createCompileCoffeeSteps=(min)->
             console.log files
             funcflow(common.flatten(createCompileSteps('./public/' + f) for f in files), {catchExceptions:false}, step.next)
     ]
-    
-runFrontend=()->
+
+runShortScript = (script) -> # output fits in memory
     return [
         (step, err)->
-          childProcess.exec 'forever -c coffee app.coffee 2>&1 | tee -a app.log', (error, stdout, stderr) ->
+          childProcess.exec script, (error, stdout, stderr) ->
             console.log(stdout)
             console.log(stderr)
             if error
@@ -68,16 +68,11 @@ runFrontend=()->
             step.next()
     ]
 
-runPythonScript=()->
-    return [
-        (step, err)->
-          childProcess.exec 'python cron/server.py', (error, stdout, stderr) ->
-            console.log(stdout)
-            console.log(stderr)
-            if error
-              common.logger.error(error)
-            step.next()
-    ]
+runFrontend = runShortScript 'forever -c coffee app.coffee 2>&1 | tee -a app.log' # TODO: fails
+
+runPythonScript = runShortScript 'python cron/server.py' # TODO: fails
+
+runTests = runShortScript 'mocha --compilers coffee:coffee-script -R nyan test/common.test.coffee' # not sure why this doesn't work
 
 job = (name, desc= "", steps, callback=(err)->if err? then logger.error(err.stacktrace))->
     task(name, desc, (options)->funcflow(flatten(steps, {catchExceptions:false, "options":options}, callback)))
@@ -88,7 +83,7 @@ job 'build', 'compiles all client side coffee script', createCompileCoffeeSteps(
 job 'build:min', 'compiles and minifies all client side coffee script', createCompileCoffeeSteps(true)
 job 'python:run', 'runs the cron-job python script', runPythonScript()
 job 'coffee:run', 'runs the GUI server', runFrontend()
-
+job 'tests', 'run unit tests', runTests()
 
 # util methods
 compile = (inputFile, callback) ->

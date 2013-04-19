@@ -1,3 +1,15 @@
+# Just the one thing to wait for right now
+timezoneDone = ->
+syncDone = false
+module.exports.sync = (cb) ->
+    if syncDone
+        cb(module.exports)
+    else
+        timezoneDone = () ->
+            #TODO deal with parallel calls to sync that are all waiting
+            cb(module.exports)
+            syncDone = true
+
 # patch Date object to support time zones
 require('time')(Date)
 
@@ -43,6 +55,7 @@ model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
     } for db_time in db_times)
     
     module.exports.ectConfig.timezones = timezones
+    timezoneDone()
 )
 module.exports.ectConfig.appName = nconf.get('appName')
 
@@ -90,6 +103,9 @@ module.exports.timesOfDay = (
         text: timeOfDayDisplayName v
     } for v in [0..24]
 )
+
+module.exports.successFail = (dbcall, cb) ->
+    dbcall.success((x) -> cb(x)).failure((x, err) -> cb(undefined, err))
 
 module.exports.getUser = (req) ->
     model.User.find({where: {id: req.user.userId()}})
