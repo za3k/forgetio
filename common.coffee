@@ -37,25 +37,36 @@ module.exports.logger = logger
 model = require('./database/model')
 module.exports.ectConfig = {}
 model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
-    offset_formatter = (offset, text) ->
-        if offset == 0
-            text
-        else if (offset % 3600) == 0
-            hours = offset / 3600
-            minutes = "00"
-            "(UTC #{ hours }:#{ minutes }) #{ text }"
-        else
-            hours = Math.floor(offset / 3600) if offset > 0
-            hours = Math.ceil(offset / 3600) if offset < 0
-            minutes = Math.floor(Math.abs((offset % 3600) / 60))
-            "(UTC #{ hours }:#{ minutes }) #{ text }"
     timezones = ({
         id: db_time.id
-        text: offset_formatter db_time.offset, db_time.text
+        text: offsetDisplayName db_time.offset, db_time.text
     } for db_time in db_times)
     
     module.exports.ectConfig.timezones = timezones
 )
+
+offsetDisplayName = (offset, text) ->
+    if offset == 0
+        text
+    else
+        {hours, minutes} = offsetToHoursAndMinutes offset
+        "(UTC #{ hours }:#{ minutes }) #{ text }"
+
+offsetToHoursAndMinutes = (offset) ->
+    if offset == 0
+        return
+            hours: 0
+            minutes: 0
+    else if (offset % 3600) == 0
+        return
+            hours: offset / 3600
+            minutes: 0
+    else
+        hours = Math.floor(offset / 3600) if offset > 0
+        hours = Math.ceil(offset / 3600) if offset < 0
+        return
+            hours: hours
+            minutes: Math.floor(Math.abs((offset % 3600) / 60))
 
 module.exports.timesOfDay = (
     {
@@ -72,6 +83,6 @@ module.exports.timesOfDay = (
 )
 
 module.exports.getUser = (req) ->
-    model.User.find({where: {id: req.session?.UserId}})
+    model.User.find({where: {id: req.user.userId()}})
 
 module.exports.ectConfig.appName = nconf.get('appName')
