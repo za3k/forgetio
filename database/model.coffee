@@ -1,5 +1,5 @@
-common = require '../common'
 pg = require 'pg'
+common = require '../common'
 nconf = common.nconf
 logger = common.logger
 
@@ -9,17 +9,40 @@ communication = "SELECT reminders.id AS reminder_id, reminders.version, reminder
 
 communication_admin = "SELECT reminders.user_id AS user_id, reminders.id AS reminder_id, reminders.version, reminder_times.id AS reminder_time_id, users.id AS user_id, reminders.message, sent_messages.scheduled, sent_messages.cancelled, received_messages.server_received, received_messages.body as received_body, sent_messages.body as sent_body, sent_messages.to AS sent_to, received_messages.from_ as received_from FROM users,reminders,reminder_times,sent_messages LEFT JOIN received_messages ON (sent_messages.id = received_messages.in_response_to) WHERE (reminders.id = reminder_times.reminder_id AND sent_messages.sent_for_reminder_time_id = reminder_times.id AND sent_messages.cancelled = false) ORDER BY scheduled DESC"
 
-module.exports.getCommunication = (user, cb) ->
+extern "getCommunication", (user, cb) ->
      query = communication
      if user.id == 1
         query = communication_admin
      pg.connect "tcp://localhost/notify", (err, client) ->
         client.query query, (err, result) ->
-          if err
+          if err?
             cb err, null
           else
             cb err, result.rows.filter (x) -> x.user_id == user.id
 
+successFail = extern "successFail", (dbcall, cb) ->
+    dbcall.success((x) -> cb(x)).failure((err) -> cb(undefined, err))
+
+extern "getUserForId", (id, cb) ->
+  successFail User.find({where: {id: id}}), cb
+
+extern "getUserForEmail", (email, cb) ->
+  successFail User.find({where:{email:email}}), cb
+
+extern "saveUser", (user, cb) ->
+  successFail user.save(), cb
+
+extern "createUserPayment", (payment, cb) ->
+  successFail UserPayment.create(payment), cb
+
+extern "updateUser", (user, changelist, cb) ->
+  successFail user.updateAttributes(changelist), cb
+
+extern "updateUserPayment", (userPayment, changelist, cb) ->
+  successFail userPayment.updateAttributes(changelist), cb
+
+extern "findAllTimezones", (cb) ->
+  successFail TimeZone.findAll({order: 'id ASC'}), cb
 
 Sequelize = require("sequelize")
 sequelize = new Sequelize('notify','postgres','brinksucksballs', {
@@ -40,7 +63,7 @@ defaultID = {
 }
 define = (name, dbname, options)->
     tmp = sequelize.define(dbname, options)
-    extern(name, tmp)
+    extern(name, tmp) #Don't export these--total encapsulation is the new goal
     return tmp
 
 module.exports.chainer = sequelize.queryChainer

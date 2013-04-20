@@ -11,7 +11,7 @@ ctrl = require('ctrl');
 
 sanitize = require('validator').sanitize;
 
-stripe = require('stripe')('sk_live_fNeG2hpEa8Du0Dc5pYarIHT0');
+stripe = require('stripe')('sk_test_cnma6aLXwZVj28xddzaby1fL');
 
 routes = require('./all');
 
@@ -78,17 +78,21 @@ exports.paymentPost = function(req, res) {
       return step.next();
     }, function(step) {
       common.logger.debug("Record the token in the database before trying to run the charge");
-      return model.UserPayment.create({
+      return model.createUserPayment({
         credit: step.data.credits,
         money: step.data.cost,
         stripe_token: step.data.stripeToken
-      }).success(function(userPayment) {
+      }, (function(userPayment, err) {
+        step.data.createUserPaymentErr = err;
         step.data.userPayment = userPayment;
         return step.next();
-      }).failure(function(err) {
-        common.logger.error(err);
+      }));
+    }, function(step) {
+      if (step.data.createUserPaymentErr != null) {
+        common.logger.error(step.data.createUserPaymentErr);
         throw "There was a server error with the form submission.";
-      });
+      }
+      return step.next();
     }, function(step) {
       var charge;
 
@@ -122,20 +126,41 @@ exports.paymentPost = function(req, res) {
       step.data.id = step.data.response.id;
       return step.next();
     }, function(step) {
-      var onFailure, updateCharge, updateUser;
+      var chargeUpdated, userUpdated;
 
       common.logger.debug("Update the charge entry in the database");
-      onFailure = function(err) {
-        common.logger.error(err);
-        throw "There was a problem procesing the payment. We received the payment but there was a problem crediting your account. Please email tech support at <a mailto:\"vanceza@gmail.com\">vanceza@gmail.com</a>";
-      };
-      updateUser = user.updateAttributes({
+      userUpdated = step.spawn();
+      chargeUpdated = step.spawn();
+      model.updateUser(user, {
         credit: user.credit + step.data.credits
-      }).success(step.spawn()).failure(onFailure);
-      updateCharge = step.data.userPayment.updateAttributes({
+      }, (function(updatedUser, err) {
+        if (err != null) {
+          step.data.updateUserErr = err;
+        }
+        return userUpdated();
+      }));
+      model.updateUserPayment(step.data.userPayment, {
         stripe_fee: step.data.fee,
         stripe_charge: step.data.id
-      }).success(step.spawn()).failure(onFailure);
+      }, (function(updatedCharge, err) {
+        if (err != null) {
+          step.data.updateChargeErr = err;
+        }
+        return chargeUpdated();
+      }));
+      return step.next();
+    }, function(step) {
+      var paymentErrMsg;
+
+      paymentErrMsg = "There was a problem procesing the payment. We received the payment but there was a problem crediting your account. Please email tech support at <a mailto:\"vanceza@gmail.com\">vanceza@gmail.com</a>";
+      if (step.data.updateUserErr != null) {
+        common.logger.error(step.data.updateUserErr);
+        throw paymentErrMsg;
+      }
+      if (step.data.updateChargeErr != null) {
+        common.logger.error(step.data.updateChargeErr);
+        throw paymentErrMsg;
+      }
       return step.next();
     }
   ];

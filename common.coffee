@@ -1,15 +1,3 @@
-# Just the one thing to wait for right now
-timezoneDone = ->
-syncDone = false
-module.exports.sync = (cb) ->
-    if syncDone
-        cb(module.exports)
-    else
-        timezoneDone = () ->
-            #TODO deal with parallel calls to sync that are all waiting
-            cb(module.exports)
-            syncDone = true
-
 # patch Date object to support time zones
 require('time')(Date)
 
@@ -46,17 +34,10 @@ logger.debug('Logger Initialized!')
 module.exports.logger = logger
 
 # shared configuration for routes
-model = require('./database/model')
+module.exports.ectConfig = 
 module.exports.ectConfig = {}
-model.TimeZone.findAll({order: 'id ASC'}).success((db_times) ->
-    timezones = ({
-        id: db_time.id
-        text: offsetDisplayName db_time.offset, db_time.text
-    } for db_time in db_times)
-    
+require('./ectConfig').timezones (timezones) ->
     module.exports.ectConfig.timezones = timezones
-    timezoneDone()
-)
 module.exports.ectConfig.appName = nconf.get('appName')
 
 offsetDisplayName = (offset, text) ->
@@ -103,9 +84,3 @@ module.exports.timesOfDay = (
         text: timeOfDayDisplayName v
     } for v in [0..24]
 )
-
-module.exports.successFail = (dbcall, cb) ->
-    dbcall.success((x) -> cb(x)).failure((x, err) -> cb(undefined, err))
-
-module.exports.getUser = (req) ->
-    model.User.find({where: {id: req.user.userId()}})

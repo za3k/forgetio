@@ -1,3 +1,4 @@
+debugger;
 check = require('validator').check
 common = require('../common')
 model = require('../database/model')
@@ -6,6 +7,7 @@ sanitize = require('validator').sanitize
 
 exports.account = (req, res, data) ->
   user = req.user.getUser()
+  common.logger.debug(user)
   model.getCommunication user, (err, result) ->
     if err
       common.logger.error err
@@ -33,25 +35,31 @@ exports.account = (req, res, data) ->
               "alert alert-info"
     }, data))
 exports.accountPost = (req, res) ->
-    json = req.body
-    user = req.user.getUser()
-    steps = [(step)->
-      if json.timezone == user.timezone_id
-        exports.account(req, res)
-      check(json.timezone, 'Timezone is invalid!').isInt()
-      step.data.timezone = sanitize(json.timezone).toInt()
-      step.next()
-    (step)->
-      user.timezone_id =  step.data.timezone
-      user.save().success(step.next).failure((err)->
-        common.logger.error("Error saving user's timezone", err)
-        throw {message:"There was a server error!"})
-    (step)->
+  debugger;
+  json = req.body
+  user = req.user.getUser()
+  steps = [(step)->
+    if json.timezone == user.timezone_id
       exports.account(req, res)
+    check(json.timezone, 'Timezone is invalid!').isInt()
+    step.data.timezone = sanitize(json.timezone).toInt()
+    step.next()
+  (step)->
+    user.timezone_id =  step.data.timezone
+    model.saveUser user, (res, err) ->
+      step.data.saveErr = err
       step.next()
-    ]
-    errorHandler = (error)->
-      json.errorMsg =  if error?.message? then error.message else error.toString()
-      common.logger.error(json.errorMsg)
-      exports.account(req, res, json)
-    ctrl(steps, {errorHandler:errorHandler},()->{})
+  (step)->
+    if step.data.saveErr?
+      common.logger.error("Error saving user's timezone", err)
+      throw {message:"There was a server error!"}
+    step.next()
+  (step)->
+    exports.account(req, res)
+    step.next()
+  ]
+  errorHandler = (error)->
+    json.errorMsg =  if error?.message? then error.message else error.toString()
+    common.logger.error(json.errorMsg)
+    exports.account(req, res, json)
+  ctrl(steps, {errorHandler:errorHandler},()->{})

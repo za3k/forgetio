@@ -5,32 +5,34 @@ http = require('http')
 path = require('path')
 ect = require('ect')
 common = require('./common')
+model = require('./database/model') #getUserForId
 nconf = common.nconf
 logger = common.logger
 
 # define some simple middleware
 loginUtilMiddleware = (req, res, next)->
     req.user = {
-        login:(user)->req.session.UserId = user.id
+        login:(user)->
+            req.session.UserId = user.id
         logout:()->req.session=null
         loggedIn:()->req.session?.UserId?
         userId:()->req.session?.UserId
         fetch:(next) ->
-            common.getUser(req).success( (user) ->
+            model.getUserForId req.user.userId(), (user, error) ->
+                if error?
+                    logger.error("User not found in loginUtilMiddleware")
+                    next(error)
                 req.user._user = user
                 next()
-            ).failure((error) ->
-                logger.error("User not found in loginUtilMiddleware")
-                next(error)
-            )
         getUser:()->req.user._user
     }
     req.user.fetch(next)
 
 # common route config info
 routeCommonConfig = (req, res, next) ->
-    req.config = common.ectConfig
-    next()
+    common.sync() ->
+        req.config = common.ectConfig
+        next()
 
 # create compiler
 compiler = require('connect-compiler')({
@@ -53,6 +55,7 @@ afterLogger = (req, res, next)->
 
 errorHandler = (err, req, res, next)-> # Handle any unhandled errors
   if err
+    console.log(err.stack)
     logger.error(err.stack)
     res.send(500, 'Something went quite wrong!')
     # res.redirect(500, "500")

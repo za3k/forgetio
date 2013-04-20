@@ -29,32 +29,39 @@ exports.signupPost = (req, res) ->
         step.next()
     (step)->
         # check if email already exists
-        model.User.find({where:{email:json.email}})
-            .success((user) ->
-                step.data.user = user
-                step.next()
-            ).error((err)->
-                common.logger.error("Error retrieving user by email", err)
-                throw {message:"There was a server error!"})
+        findUserForEmail json.email, (user, err) ->
+            if err?
+                step.data.findUserErr = err
+            step.data.user = user
+            step.next()
     (step)->
-        if user? then throw {message:"A user with that email already exists!"}
+        if step.data.findUserErr?
+            common.logger.error("Error retrieving user by email", step.data.findUserErr)
+            throw {message:"There was a server error!"})
+        step.next()
+    (step)->
+        if step.data.user? then throw {message:"A user with that email already exists!"}
         # save the new user!
         user = model.User.build(json)
-        console.dir(user)
-        user.save()
-            .success(step.next)
-            .error((err)->
-                common.logger.error("Error saving user", err)
-                throw {message:"There was a server error!"})
+        model.saveUser user, (savedUser, err) ->
+            if err?
+                step.data.saveUserErr = err
+            step.data.user = savedUser
+            step.next()
+    (step)->
+        if step.data.saveUserErr?
+            common.logger.error("Error saving user", step.data.saveUserErr)
+            throw {message:"There was a server error!"})
+        step.next()
     (step)->
         # log the user in!
-        req.session.UserId = step.data.user.id
+        req.session.login step.data.user
         step.next()
     ]
     errorHandler = (error)->
         delete json.password
         json.errorMsg =  if error?.message? then error.message else error.toString()
         signup(req, res, json)
-    loginSuccess = ()-> 
-        res.redirect('/scheduled.html')
-    ctrl(steps, {errorHandler:errorHandler}, loginSuccess)
+    signupSuccess = ()-> 
+        res.redirect('/account.html')
+    ctrl(steps, {errorHandler:errorHandler}, signupSuccess)

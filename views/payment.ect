@@ -1,9 +1,9 @@
 <script type="text/javascript" src="https://js.stripe.com/v1/"></script>
 <script type="text/javascript">
 <% 
-  # <!--Stripe.setPublishableKey('pk_test_0vJgMvmOAjwiSDQQ8X2XP4Ky'); -->
+  #Stripe.setPublishableKey('pk_live_YHP6pm3l1Ub76WbOyhJASvU0');
 %>
-Stripe.setPublishableKey('pk_live_YHP6pm3l1Ub76WbOyhJASvU0');
+Stripe.setPublishableKey('pk_test_0vJgMvmOAjwiSDQQ8X2XP4Ky');
 $(function() {
   $('#payment-form').submit(function(event) {
     // Disable the submit button to prevent repeated clicks

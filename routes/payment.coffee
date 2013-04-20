@@ -3,8 +3,8 @@ common = require('../common')
 model = require('../database/model')
 ctrl = require('ctrl')
 sanitize = require('validator').sanitize
-#stripe = require('stripe')('sk_test_cnma6aLXwZVj28xddzaby1fL')
-stripe = require('stripe')('sk_live_fNeG2hpEa8Du0Dc5pYarIHT0')
+stripe = require('stripe')('sk_test_cnma6aLXwZVj28xddzaby1fL')
+#stripe = require('stripe')('sk_live_fNeG2hpEa8Du0Dc5pYarIHT0')
 routes = require('./all')
 
 exports.account = (req, res, data) ->
@@ -58,17 +58,20 @@ exports.paymentPost = (req, res) ->
     (step)->
       #Record the token in the database before trying to run the charge
       common.logger.debug("Record the token in the database before trying to run the charge")
-      model.UserPayment.create({
+      model.createUserPayment {
         credit: step.data.credits
         money: step.data.cost
         stripe_token: step.data.stripeToken
-      }).success((userPayment) ->
+      }, ((userPayment, err) ->
+        step.data.createUserPaymentErr = err
         step.data.userPayment = userPayment
         step.next()
-      ).failure((err) ->
-        common.logger.error(err)
-        throw "There was a server error with the form submission."
       )
+    (step)->
+      if step.data.createUserPaymentErr?
+        common.logger.error(step.data.createUserPaymentErr)
+        throw "There was a server error with the form submission."
+      step.next()
     (step)->
       # Run the charge
       common.logger.debug("Run the charge")
@@ -99,18 +102,34 @@ exports.paymentPost = (req, res) ->
     (step)->
       # Update the charge entry in the database
       common.logger.debug("Update the charge entry in the database")
-      onFailure = (err) ->
-        common.logger.error(err)
-        throw "There was a problem procesing the payment. We received the payment but there was a problem crediting your account. Please email tech support at <a mailto:\"vanceza@gmail.com\">vanceza@gmail.com</a>"
-      updateUser = user.updateAttributes({
-        credit: user.credit + step.data.credits
-      }).success(step.spawn()).failure(onFailure)
+      userUpdated = step.spawn()
+      chargeUpdated = step.spawn()
 
-      updateCharge = step.data.userPayment.updateAttributes({
+      model.updateUser user, {
+        credit: user.credit + step.data.credits
+      }, ((updatedUser, err) ->
+        if err?
+          step.data.updateUserErr = err
+        userUpdated()
+      )
+
+      model.updateUserPayment step.data.userPayment, {
         stripe_fee: step.data.fee
         stripe_charge: step.data.id
-      }).success(step.spawn()).failure(onFailure)
-
+      },((updatedCharge, err) ->
+        if err?
+          step.data.updateChargeErr = err
+        chargeUpdated()
+      ) 
+      step.next()
+    (step)->
+      paymentErrMsg = "There was a problem procesing the payment. We received the payment but there was a problem crediting your account. Please email tech support at <a mailto:\"vanceza@gmail.com\">vanceza@gmail.com</a>"
+      if step.data.updateUserErr?
+        common.logger.error(step.data.updateUserErr)
+        throw paymentErrMsg
+      if step.data.updateChargeErr?
+        common.logger.error(step.data.updateChargeErr)
+        throw paymentErrMsg
       step.next()
     ]
     errorHandler = (step, error)->
