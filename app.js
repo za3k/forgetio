@@ -55,10 +55,8 @@ loginUtilMiddleware = function(req, res, next) {
 };
 
 routeCommonConfig = function(req, res, next) {
-  return common.sync()(function() {
-    req.config = common.ectConfig;
-    return next();
-  });
+  req.config = common.ectConfig;
+  return next();
 };
 
 compiler = require('connect-compiler')({

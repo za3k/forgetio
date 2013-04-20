@@ -40,34 +40,6 @@ require('./ectConfig').timezones (timezones) ->
     module.exports.ectConfig.timezones = timezones
 module.exports.ectConfig.appName = nconf.get('appName')
 
-offsetDisplayName = (offset, text) ->
-    if offset == 0
-        text
-    else
-        {hours, minutes} = offsetToHoursAndMinutes offset
-        if minutes < 10
-            minutes = "0#{minutes}"
-        "(UTC #{ hours }:#{ minutes }) #{ text }"
-
-offsetToHoursAndMinutes = (offset) ->
-    if offset == 0
-        {
-            hours: 0
-            minutes: 0
-        }
-    else if (offset % 3600) == 0
-        {
-            hours: offset / 3600
-            minutes: 0
-        }
-    else
-        hours = Math.floor(offset / 3600) if offset > 0
-        hours = Math.ceil(offset / 3600) if offset < 0
-        {
-            hours: hours
-            minutes: Math.floor(Math.abs((offset % 3600) / 60))
-        }
-
 timeOfDayDisplayName = (timeOfDay) ->
     if v in [0, 24]
         "Midnight"

@@ -30,9 +30,8 @@ loginUtilMiddleware = (req, res, next)->
 
 # common route config info
 routeCommonConfig = (req, res, next) ->
-    common.sync() ->
-        req.config = common.ectConfig
-        next()
+    req.config = common.ectConfig
+    next()
 
 # create compiler
 compiler = require('connect-compiler')({
