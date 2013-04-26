@@ -25,10 +25,11 @@ extern("getCommunication", function(user, cb) {
   if (user.id === 1) {
     query = communication_admin;
   }
-  return pg.connect("tcp://localhost/notify", function(err, client) {
+  return pg.connect("tcp://localhost/notify", function(err, client, done) {
     common.logger.debug("pg.connect returned");
     common.logger.debug(err);
-    common.logger.debug(client);
+    common.logger.debug(common._.isUndefined(client));
+    common.logger.debug(common._.isNull(client));
     if (err != null) {
       cb(err, null);
     }

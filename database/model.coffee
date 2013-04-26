@@ -15,10 +15,12 @@ extern "getCommunication", (user, cb) ->
         if user.id == 1
             query = communication_admin
         
-        pg.connect "tcp://localhost/notify", (err, client) ->
+        pg.connect "tcp://localhost/notify", (err, client, done) ->
             common.logger.debug("pg.connect returned")
             common.logger.debug(err)
-            common.logger.debug(client)
+            common.logger.debug(common._.isUndefined(client))
+            common.logger.debug(common._.isNull(client))
+            #common.logger.debug(client)
             if err?
                 cb err, null
             common.logger.debug(query)
