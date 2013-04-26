@@ -8,10 +8,10 @@ sanitize = require('validator').sanitize
 exports.account = (req, res, data) ->
   user = req.user.getUser()
   common.logger.debug(user)
-  common.logger("exports.account before getCommunication")
+  common.logger.debug("exports.account before getCommunication")
   model.getCommunication user, (err, result) ->
-    common.logger("exports.account getCommunication returned")
-    common.logger (user?.email)
+    common.logger.debug("exports.account getCommunication returned")
+    common.logger.debug(user?.email)
     if err
       common.logger.error err
     all = common._.pluck(result, 'server_received')
