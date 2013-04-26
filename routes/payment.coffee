@@ -9,7 +9,9 @@ routes = require('./all')
 
 exports.account = (req, res, data) ->
   user = req.user.getUser()
+  common.logger("exports.account before getCommunication")
   model.getCommunication user, (err, result) ->
+    common.logger("exports.account getCommunication returned")
     if err
       common.logger.error err
     all = common._.pluck(result, 'server_received')

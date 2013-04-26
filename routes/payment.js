@@ -19,9 +19,11 @@ exports.account = function(req, res, data) {
   var user;
 
   user = req.user.getUser();
+  common.logger("exports.account before getCommunication");
   return model.getCommunication(user, function(err, result) {
     var all, result_present;
 
+    common.logger("exports.account getCommunication returned");
     if (err) {
       common.logger.error(err);
     }

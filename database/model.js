@@ -25,6 +25,9 @@ extern("getCommunication", function(user, cb) {
     query = communication_admin;
   }
   return pg.connect("tcp://localhost/notify", function(err, client) {
+    if (err != null) {
+      cb(err, null);
+    }
     return client.query(query, function(err, result) {
       if (err != null) {
         return cb(err, null);
