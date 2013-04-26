@@ -187,3 +187,4 @@ exports.scheduledPost = (req, res) ->
       exports.scheduled(req, res, {successMsg: "Successfully updated."})
     (errMsg) ->
       exports.scheduled(req, res, {errorMsg: errMsg}))
+bv
