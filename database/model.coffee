@@ -20,6 +20,8 @@ extern "getCommunication", (user, cb) ->
             common.logger.debug(err)
             common.logger.debug(common._.isUndefined(client))
             common.logger.debug(common._.isNull(client))
+            avail = pg.pool.availableObjectsCount()
+            common.logger.debug("Available clients: " + avail)
             #common.logger.debug(client)
             if err?
                 cb err, null
@@ -30,6 +32,7 @@ extern "getCommunication", (user, cb) ->
                     cb err, null
                 else
                     cb err, result.rows.filter (x) -> x.user_id == user.id
+                done()
 
 successFail = extern "successFail", (dbcall, cb) ->
     dbcall.success((x) -> cb(x)).failure((err) -> cb(undefined, err))

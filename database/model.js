@@ -26,10 +26,14 @@ extern("getCommunication", function(user, cb) {
     query = communication_admin;
   }
   return pg.connect("tcp://localhost/notify", function(err, client, done) {
+    var avail;
+
     common.logger.debug("pg.connect returned");
     common.logger.debug(err);
     common.logger.debug(common._.isUndefined(client));
     common.logger.debug(common._.isNull(client));
+    avail = pg.pool.availableObjectsCount();
+    common.logger.debug("Available clients: " + avail);
     if (err != null) {
       cb(err, null);
     }
@@ -37,12 +41,13 @@ extern("getCommunication", function(user, cb) {
     return client.query(query, function(err, result) {
       common.logger.debug("query returned");
       if (err != null) {
-        return cb(err, null);
+        cb(err, null);
       } else {
-        return cb(err, result.rows.filter(function(x) {
+        cb(err, result.rows.filter(function(x) {
           return x.user_id === user.id;
         }));
       }
+      return done();
     });
   });
 });
