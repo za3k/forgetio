@@ -20,8 +20,8 @@ extern "getCommunication", (user, cb) ->
             common.logger.debug(err)
             common.logger.debug(common._.isUndefined(client))
             common.logger.debug(common._.isNull(client))
-            avail = pg.pool.availableObjectsCount()
-            common.logger.debug("Available clients: " + avail)
+            #avail = pg.pool.availableObjectsCount()
+            #common.logger.debug("Available clients: " + avail)
             #common.logger.debug(client)
             if err?
                 cb err, null

@@ -26,14 +26,10 @@ extern("getCommunication", function(user, cb) {
     query = communication_admin;
   }
   return pg.connect("tcp://localhost/notify", function(err, client, done) {
-    var avail;
-
     common.logger.debug("pg.connect returned");
     common.logger.debug(err);
     common.logger.debug(common._.isUndefined(client));
     common.logger.debug(common._.isNull(client));
-    avail = pg.pool.availableObjectsCount();
-    common.logger.debug("Available clients: " + avail);
     if (err != null) {
       cb(err, null);
     }
