@@ -20,15 +20,21 @@ communication_admin = "SELECT reminders.user_id AS user_id, reminders.id AS remi
 extern("getCommunication", function(user, cb) {
   var query;
 
+  common.logger.debug("getCommunication");
   query = communication;
   if (user.id === 1) {
     query = communication_admin;
   }
   return pg.connect("tcp://localhost/notify", function(err, client) {
+    common.logger.debug("pg.connect returned");
+    common.logger.debug(err);
+    common.logger.debug(client);
     if (err != null) {
       cb(err, null);
     }
+    common.logger.debug(query);
     return client.query(query, function(err, result) {
+      common.logger.debug("query returned");
       if (err != null) {
         return cb(err, null);
       } else {

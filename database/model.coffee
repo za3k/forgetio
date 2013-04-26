@@ -10,13 +10,20 @@ communication = "SELECT reminders.id AS reminder_id, reminders.version, reminder
 communication_admin = "SELECT reminders.user_id AS user_id, reminders.id AS reminder_id, reminders.version, reminder_times.id AS reminder_time_id, users.id AS user_id, reminders.message, sent_messages.scheduled, sent_messages.cancelled, received_messages.server_received, received_messages.body as received_body, sent_messages.body as sent_body, sent_messages.to AS sent_to, received_messages.from_ as received_from FROM users,reminders,reminder_times,sent_messages LEFT JOIN received_messages ON (sent_messages.id = received_messages.in_response_to) WHERE (reminders.id = reminder_times.reminder_id AND sent_messages.sent_for_reminder_time_id = reminder_times.id AND sent_messages.cancelled = false) ORDER BY scheduled DESC"
 
 extern "getCommunication", (user, cb) ->
+        common.logger.debug("getCommunication")
         query = communication
         if user.id == 1
             query = communication_admin
+        
         pg.connect "tcp://localhost/notify", (err, client) ->
+            common.logger.debug("pg.connect returned")
+            common.logger.debug(err)
+            common.logger.debug(client)
             if err?
                 cb err, null
+            common.logger.debug(query)
             client.query query, (err, result) ->
+                common.logger.debug("query returned")
                 if err?
                     cb err, null
                 else
