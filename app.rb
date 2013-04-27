@@ -389,8 +389,25 @@ post '/scheduled.html', :auth => :user do
 end
 
 get '/results.html', :auth => :user do
-	#app.get('/results.html', routes.results)
-	"TODO"
+	results = @current_user.all_communications.group_by { |x| x["reminder_id"]}
+	@reminders = results.map do |reminder_id, messages|
+		{
+	        text: messages[0]["message"],
+	        id: reminder_id,
+	        replies: messages.map do |message|
+        		{
+        			date: message["scheduled"],
+        			reply: unless message["server_received"].nil? 
+        				{
+	        				text: message["received_body"],
+	        				time: message["server_received"]
+	        			}
+		        	end
+		        }
+	        end
+	    }
+    end
+    erb :results
 end
 
 get '/results/all', :auth => :user do

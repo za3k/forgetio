@@ -1,26 +1,25 @@
-<% extend 'layout.ect' %>
 <div class="accordion" id="accordion">
-  <% for reminder, i in @reminders : %>
+  <% @reminders.each_with_index do |reminder, i| %>
   <div class="accordion-group">
     <div class="accordion-heading">
       <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse<%= i %>">
-        <%= reminder.text %>
+        <%= reminder[:text] %>
       </a>
     </div>
-    <div id="collapse<%= i %>" class="accordion-body collapse<% if i==0 : %> in<% end %>">
+    <div id="collapse<%= i %>" class="accordion-body collapse<% if i==0 %> in<% end %>">
       <div class="accordion-inner">
         <table class="table table-striped table-hover">
           <thead>
             <th>Date</th><th>Reply</th><th>Reply Time</th>
           </thead>
           <tbody>
-            <% for reply in reminder.replies : %>
+            <% for reply in reminder[:replies] %>
               <tr>
-                  <td><%= reply.date %></td>
-                  <% if reply.reply : %>
-                      <td><%= reply.reply.text %></td>
-                      <td><%= reply.reply.time %></td>
-                  <% else : %>
+                  <td><%= reply[:date] %></td>
+                  <% if reply[:reply] %>
+                      <td><%= reply[:reply][:text] %></td>
+                      <td><%= reply[:reply][:time] %></td>
+                  <% else %>
                       <td>-</td>
                       <td>-</td>
                   <% end %>
@@ -28,7 +27,7 @@
             <% end %>
           </tbody>
         </table>
-        <a href="/results/<%= reminder.id %>" class="pull-right">CSV Export</a>
+        <a href="/results/<%= reminder[:id] %>" class="pull-right">CSV Export</a>
       </div>
     </div>
   </div>
