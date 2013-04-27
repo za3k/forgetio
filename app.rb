@@ -316,7 +316,7 @@ get '/users', :auth => :admin do
 end
 
 get %r{/(?:|home.html|index.html?)$} do
-	@current_user.to_s
+	erb :home, :locals => { :login => (partial_erb :login) }
 end
 
 get '/login.html' do
