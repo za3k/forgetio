@@ -1,21 +1,29 @@
 <div class="navbar">
   <div class="navbar-inner">
     <div class="container" style="width: auto;">
-      <a class="brand" href="#"><%= @req.config.appName %></a>
+      <a class="brand" href="#"><%= settings.app_name %></a>
       <ul class="nav">
+        <%
+          def matches(thing, pattern)
+            (thing and pattern) or (not thing and not pattern)
+          end
+          def matches_or_missing(thing, pattern)
+            pattern.nil? or matches(thing, pattern)
+          end
+        %>
         <% 
-          [{page: 'Home', text: 'Home', path:'/'},
-           {page: 'Account', text: 'My Account', path: '/account.html', signedIn:true},
-           {page: 'Scheduled', text: 'Repeating Messages', path: '/scheduled.html', signedIn:true},
-           {page: 'Results', text: 'Results', path: '/results.html', signedIn:true},
+          [{page: :home, text: 'Home', path:'/'},
+           {page: :account, text: 'My Account', path: '/account.html', signedIn:true},
+           {page: :scheduled, text: 'Repeating Messages', path: '/scheduled.html', signedIn:true},
+           {page: :results, text: 'Results', path: '/results.html', signedIn:true},
            {page: '|'},
-           {page: 'Login', text:'Login', path:'/login.html', signedIn:false},
-           {page: 'Signup', text:'Sign up', path:'/signup.html', signedIn:false}
+           {page: :login, text:'Login', path:'/login.html', signedIn:false},
+           {page: :signup, text:'Sign up', path:'/signup.html', signedIn:false}
            ].each do |entry| %>
             <% if entry[:page] == '|' %>
               <li class="divider-vertical"></li>
-            <% elsif entry[:page]=="Logout" && logged_in? %>
-            <% elsif (!entry.has_key? :signedIn) or (entry[:signedIn] == true && logged_in?) or (entry[:signedIn] == false && logged_in?) %>
+            <% elsif entry[:page]==:logout && logged_in? %>
+            <% elsif matches_or_missing logged_in?, entry[:signedIn] %>
               <li<% if entry[:page] == @page %> class="active"<% end %>>
                 <a href="<%= entry[:path] %>"><%= entry[:text] %></a>
               </li>
@@ -23,7 +31,7 @@
         <% end %>
       </ul>
       <% [{page: 'Logout', text:'Logout', path:'/logout.html', signedIn:true}].each do |entry| %>
-          <% if !entry.has_key? :signedIn or (entry[:signedIn] == true && logged_in?) or (entry[:signedIn] == false && !logged_in?) %>
+          <% if matches_or_missing logged_in?, entry[:signedIn] %>
             <a href="<%= entry[:path] %>" class="btn btn-primary"><%= entry[:text] %></a>
           <% end %>
       <% end %>

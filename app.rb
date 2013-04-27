@@ -287,6 +287,22 @@ helpers do
 	def signup_page
 		erb :signup
 	end
+
+	def stripe_payment_key
+		if settings.development?
+	   		"pk_test_0vJgMvmOAjwiSDQQ8X2XP4Ky"
+	  	elsif settings.test? or settings.production?
+	    	"pk_live_YHP6pm3l1Ub76WbOyhJASvU0"
+	    else
+	    	raise "environment not found"
+	  	end
+	end
+
+	def payment_page
+		@stripe_payment_key = stripe_payment_key
+		@text_messages_per_credit = 1
+		partial_erb :payment
+	end
 end
 
 get '/users', :auth => :admin do
@@ -352,7 +368,7 @@ get '/account.html', :auth => :user do
 	@timezones = Database.timezones
 	erb :account, :locals => { 
 		:warningLevel => :warningLevel,
-		:payment => "TODO"
+		:payment => payment_page
 	 }
 end
 

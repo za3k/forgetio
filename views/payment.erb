@@ -1,0 +1,83 @@
+<script type="text/javascript" src="https://js.stripe.com/v1/"></script>
+<script type="text/javascript">
+Stripe.setPublishableKey('
+<%= 
+  @stripe_publishable_key
+%>');
+
+$(function() {
+  $('#payment-form').submit(function(event) {
+    // Disable the submit button to prevent repeated clicks
+    $('.submit-button').prop('disabled', true);
+
+    Stripe.createToken({
+      number: $('.card-number').val(),
+      cvc: $('.card-cvc').val(),
+      exp_month: $('.card-expiry-month').val(),
+      exp_year: $('.card-expiry-year').val()
+    }, stripeResponseHandler);
+
+    // Prevent the form from submitting with the default action
+    return false;
+  });
+  function stripeResponseHandler(status, response) {
+  if (response.error) {
+    // Show the errors on the form
+    $('.payment-errors').text(response.error.message);
+    $('.submit-button').prop('disabled', false);
+  } else {
+    var $form = $('#payment-form');
+    // token contains id, last4, and card type
+    var token = response.id;
+    // Insert the token into the form so it gets submitted to the server
+    $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+    // and submit
+    $form.get(0).submit();
+  }
+  }
+});
+</script>
+<form class="form-horizontal" id="payment-form" method="post" action="/payment.html">
+  <div class="alert-error payment-errors"></div>
+  <div class="control-group">
+    <label class="control-label" for="card-number">Card Number</label>
+    <div class="controls">
+      <input type="text" class="card-number" placeholder="Credit Card Number">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="card-cvc">CVC</label>
+    <div class="controls">
+      <input type="text" class="card-cvc" placeholder="CVC">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label">Expiration Date</label>
+    <div class="controls">
+      <input type="text" class="card-expiry-month input-small" size="2" placeholder="MM">/
+      <input type="text" class="card-expiry-year input-small" size="4" placeholder="YYYY">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="card-number">Credits</label>
+    <div class="controls">
+    <% [{credits: 50, price: "$1"},
+        {credits: 250, price: "$5"},
+        {credits: 500, price: "$10", checked: true},
+        {credits: 1000, price: "$20"},
+        {credits: 2500, price: "$50"},
+        {credits: 5000, price: "$100"}].each do |option| %>
+      <label class="radio">
+        <input type="radio" name="credits" value="<%= option[:credits] %>"<% if option[:checked] %> checked<% end %>>
+        Add <%= option[:credits] %> credits (<%= @text_messages_per_credit * option[:credits] %> text messages) for <%= option[:price] %>.
+      </label>
+    <% end %>
+    </div>
+  </div>
+  <div class="control-group">
+    <div class="controls">
+      <button type="submit" class="submit-button btn">Buy credits</button>
+    </div>
+  </div>
+  <small><b><%= settings.app_name %></b> does not store your credit card information.<br/></small>
+</form>
