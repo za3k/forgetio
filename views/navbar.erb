@@ -14,8 +14,8 @@
            ].each do |entry| %>
             <% if entry[:page] == '|' %>
               <li class="divider-vertical"></li>
-            <% elsif entry[:page]=="Logout" && @req.user.loggedIn %>
-            <% elsif (!entry.has_key? :signedIn) or (entry[:signedIn] == true && @req.user.loggedIn) or (entry[:signedIn] == false && !@req.user.loggedIn) %>
+            <% elsif entry[:page]=="Logout" && logged_in? %>
+            <% elsif (!entry.has_key? :signedIn) or (entry[:signedIn] == true && logged_in?) or (entry[:signedIn] == false && logged_in?) %>
               <li<% if entry[:page] == @page %> class="active"<% end %>>
                 <a href="<%= entry[:path] %>"><%= entry[:text] %></a>
               </li>
@@ -23,7 +23,7 @@
         <% end %>
       </ul>
       <% [{page: 'Logout', text:'Logout', path:'/logout.html', signedIn:true}].each do |entry| %>
-          <% if !entry.has_key? :signedIn or (entry[:signedIn] == true && @req.user.loggedIn) or (entry[:signedIn] == false && !@req.user.loggedIn) %>
+          <% if !entry.has_key? :signedIn or (entry[:signedIn] == true && logged_in?) or (entry[:signedIn] == false && !logged_in?) %>
             <a href="<%= entry[:path] %>" class="btn btn-primary"><%= entry[:text] %></a>
           <% end %>
       <% end %>

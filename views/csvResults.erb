@@ -1,0 +1,3 @@
+user_id, reminder_id, reminder_version, reminder_message, internal_time_id, sent_message, sent_time, recieved_message, received_time
+<% for line in @lines %>"<%= line["user_id"] %>", "<%= line["reminder_id"] %>", "<%= line["version"] %>", "<%= line["message"] %>", "<%= line["reminder_time_id"] %>", "<%= line["sent_body"] %>", "<%= line["scheduled"] %>", "<%= line["recieved_body"] %>", "<%= line["server_received"] %>"
+<% end %>
