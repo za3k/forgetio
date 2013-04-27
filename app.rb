@@ -71,8 +71,7 @@ class User
 		@user["timezone_id"]
 	end
 	def all_communications
-		@all = Database.all_communications self unless defined?(@all)
-		@all
+		@_all_communications ||= Database.all_communications self
 	end
 	def messages_received_sent
 		all_communications.partition { |comm| not comm["server_received"].nil? }
@@ -166,8 +165,8 @@ class Database
 					received_messages.from_ as received_from FROM 
 					users,reminders,reminder_times,sent_messages LEFT JOIN 
 					received_messages ON (sent_messages.id = 
-					received_messages.in_response_to) WHERE 
-					(users.id = reminders.user_id AND 
+					received_messages.in_response_to) WHERE (
+					users.id = reminders.user_id AND 
 					reminders.id = reminder_times.reminder_id AND 
 					sent_messages.sent_for_reminder_time_id = reminder_times.id 
 					AND sent_messages.cancelled = false) 
@@ -177,7 +176,8 @@ class Database
 			end
 		else
 			connect do |conn|
-				conn.exec("SELECT reminders.id AS reminder_id, reminders.version, 
+				conn.exec("SELECT 
+					reminders.id AS reminder_id, reminders.version, 
 					reminder_times.id AS reminder_time_id, users.id AS user_id, 
 					reminders.message, sent_messages.scheduled, 
 					sent_messages.cancelled, received_messages.server_received, 
@@ -186,7 +186,8 @@ class Database
 					received_messages.from_ as received_from FROM 
 					users,reminders,reminder_times,sent_messages LEFT JOIN 
 					received_messages ON (sent_messages.id = 
-					received_messages.in_response_to) WHERE (users.id = $1 AND 
+					received_messages.in_response_to) WHERE (
+					users.id = $1 AND 
 					users.id = reminders.user_id AND 
 					reminders.id = reminder_times.reminder_id AND 
 					sent_messages.sent_for_reminder_time_id = reminder_times.id 
@@ -389,8 +390,8 @@ post '/scheduled.html', :auth => :user do
 end
 
 get '/results.html', :auth => :user do
-	results = @current_user.all_communications.group_by { |x| x["reminder_id"]}
-	@reminders = results.map do |reminder_id, messages|
+	results = @current_user.all_communications
+	@reminders = results.group_by { |x| x["reminder_id"]}.map do |reminder_id, messages|
 		{
 	        text: messages[0]["message"],
 	        id: reminder_id,
@@ -410,14 +411,14 @@ get '/results.html', :auth => :user do
     erb :results
 end
 
-get '/results/all', :auth => :user do
+get %r{/results(?:|/all)$}, :auth => :user do
 	@lines = @current_user.all_communications
 	content_type :txt
 	erb :csvResults, :layout => false
-	#app.get('/results/all', routes.csvExportAllReminders)
 end
 
-get '/results/:id', :auth => :user do
-	#app.get('/results/:id', routes.csvExportSingleReminder)
-	"TODO"
+get '/results/:id', :auth => :user do |id|
+	@lines = @current_user.all_communications.find_all { |line| line["reminder_id"] == id}
+	content_type :txt
+	erb :csvResults, :layout => false
 end
