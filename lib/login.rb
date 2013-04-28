@@ -17,6 +17,8 @@ require 'digest'
 require 'openssl'
 class HashedPassword
 	def self.generate(password, salt=generate_salt, algorithm="sha1", iterations=1)
+		return nil unless algorithm == "sha1"
+		return nil unless iterations == 1
 		hash "sha1", generate_salt, 1, password
 	end
 	def self.generate_salt length=50, charset=('a'..'z').to_a
@@ -33,8 +35,6 @@ class HashedPassword
 	end
 	def self.verify?(password, hashed_password)
 		algorithm, salt, iterations, hashed = hashed_password.split "$"
-		puts(hashed_password)
-		puts(hash(algorithm, salt, iterations.to_i, password))
 		hashed_password == hash(algorithm, salt, iterations.to_i, password)
 	end
 end
