@@ -1,3 +1,5 @@
+require 'ostruct'
+
 class User
 	def initialize(userObj)
 		@user = userObj

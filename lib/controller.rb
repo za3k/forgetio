@@ -86,6 +86,7 @@ end
 
 get '/logout.html' do
 	logout
+	redirect to('/login.html')
 end
 
 get '/signup.html' do
