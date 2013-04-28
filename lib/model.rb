@@ -1,24 +1,12 @@
 class User
-	def initialize(userObj, loggedIn)
+	def initialize(userObj)
 		@user = userObj
-		@loggedIn = loggedIn
 	end
 	def has_role? role
 		roles.include? role
 	end
 	def method_missing(n)
 		@user[n.to_s]
-	end
-	def roles
-		roles = [:user]
-		roles.push :admin if admin?
-		roles
-	end
-	def admin?
-		["vanceza@gmail.com"].include? email
-	end
-	def logged_in?
-		@loggedIn
 	end
 	def to_s
 		@user.to_s

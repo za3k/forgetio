@@ -1,3 +1,14 @@
+class User
+	def roles
+		roles = [:user]
+		roles.push :admin if admin?
+		roles
+	end
+	def admin?
+		["vanceza@gmail.com"].include? email
+	end
+end
+
 def logged_in?
 	session? and session[:id]
 end
@@ -28,7 +39,7 @@ end
 
 before do
 	if logged_in?
-		@current_user = User.new current_user, true
+		@current_user = User.new current_user
 	end
 end
 
