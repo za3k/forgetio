@@ -76,10 +76,9 @@ post '/login.html' do
 	unless user
 		return bad_username_or_password
 	end
-	#TODO
-	#unless user["password"] == password
-	#	return bad_username_or_password
-	#end
+	unless HashedPassword.verify? password, user["password"]
+		return bad_username_or_password
+	end
 	login user["id"]
 	redirect to('/account.html')
 end
@@ -136,7 +135,7 @@ end
 
 get '/results.html', :auth => :user do
 	results = @current_user.all_communications
-	@reminders = results.group_by { |x| x["reminder_id"]}.map do |reminder_id, messages|
+	@reminders = results.group_by { |x| x["reminder_id"] }.map do |reminder_id, messages|
 		{
 	        text: messages[0]["message"],
 	        id: reminder_id,
