@@ -1,6 +1,5 @@
 require 'sinatra'
 require 'sinatra/session'
-require 'ostruct'
 require 'ruby-debug'
 require 'model.rb'
 require 'database.rb'

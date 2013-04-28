@@ -1,12 +1,12 @@
 <% for reminder in @reminders %>
   <div class="well reminder">
-    <% if reminder.error? and reminder.error != "" %>
+    <% unless reminder.error.nil? %>
       <div class="alert alert-error"><%= reminder.error %></div>
     <% end %>
     <form method="post" action="/scheduled.html">
       Message: <input type="text" class="input-block-level message" value="<%= reminder.message %>"/><br />
-      <% if reminder.id? %><input type="hidden" class="id" value="<%= reminder.id %>"/><% end %>
-      <% if reminder.version? %><input type="hidden" class="version" value="<%= reminder.version %>"/><% end %>
+      <% unless reminder.id.nil? %><input type="hidden" class="id" value="<%= reminder.id %>"/><% end %>
+      <% unless reminder.version.nil? %><input type="hidden" class="version" value="<%= reminder.version %>"/><% end %>
       <table class="valign-table">
         <% for time in reminder.times %>
           <tr class="time">
@@ -20,7 +20,7 @@
                 <div class="well checkbox-toggles valign-remove-margins<% if !time.enabled %> muted<% end %>" style="margin-left: 20px">
                   <input type="text" value="<%= time.frequency %>" class="input-mini frequency" /> times per day (on average) between <select class="input-time-of-day start-time"><% for tdde in @beginTimesOfDay %><option value="<%- tdde.value %>"<% if tdde.value == time.start %> selected<% end %>><%= tdde.text %></option><% end %></select> and <select class="input-time-of-day end-time"><% for tdde in @endTimesOfDay %><option value="<%- tdde.value %>"<% if tdde.value == time.end %> selected<% end %>><%= tdde.text %></option><% end %></select><br />
                   <% for day in @daysOfWeek %>
-                  <label class="checkbox inline day"><input type="checkbox" name="<%= day %>"<% if time.days.include? day %> checked<% end %>/> <%- day %></label>
+                  <label class="checkbox inline day"><input type="checkbox" name="<%= day %>"<% if time.days.include? day %> checked<% end %>/> <%= day %></label>
                   <% end %>
                 </div>
               </span>
@@ -28,7 +28,7 @@
           </tr>
         <% end %>
       </table>
-      <label>Phone <input type="text" name="phone" class="phone" value="<%= reminder.phone %>" placeholder="555-555-5555"/></label>
+      <label>Phone <input type="text" name="phone" class="phone" value="<%= reminder.phone.number if reminder.phone %>" placeholder="555-555-5555"/></label>
       <div class="form-actions">
         <button type="submit" class="btn btn-primary save">Save changes</button>
         <button type="button" class="btn">Cancel</button>

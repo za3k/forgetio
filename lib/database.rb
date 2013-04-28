@@ -103,4 +103,36 @@ class Database
 			end
 		end
 	end
+
+	def self.all_reminders_for_user user
+		query_params("SELECT * FROM reminders WHERE reminders.id = $1",
+			[user.id]) do |result|
+			return result.map { |reminder| DatabaseReminder.new reminder }
+		end
+	end
+
+	def self.current_reminders_for_user user
+		reminders = all_reminders_for_user user
+		reminders.reject do |reminder|
+			reminders.any? do |other_reminder|
+				other_reminder.newer_version_of_same_reminder? reminder
+			end
+		end
+	end
+
+	def self.phone_for_reminder reminder
+		query_params("SELECT * FROM phones where phones.id = $1",
+			[reminder.phone_id]) do |result|
+			return DatabasePhoneNumber.new result[0] if result.num_tuples == 1
+			raise 'Reminder is missing a phone number' if result.num_tuples == 0
+			raise 'Reminder has multiple phone numbers'
+		end
+	end
+
+	def self.times_for_reminder reminder
+		query_params("SELECT * FROM reminder_times where reminder_times.reminder_id = $1",
+			[reminder.id]) do |result|
+			return result.map { |time| DatabaseReminderTime.new time }
+		end
+	end
 end
