@@ -28,11 +28,23 @@ class Database
 		end
 	end
 
+	def self.create_user name, password_hash, timezone_id, email
+		query_params("INSERT INTO users 
+			(credit, name, password, timezone_id, email,
+			\"createdAt\", \"updatedAt\") 
+			VALUES (0, $1, $2, $3, $4, 'now', 'now')", 
+			[name, password_hash, timezone_id, email]) do |results|
+			
+			raise "INSERT USER failed" unless results.cmd_tuples == 1
+			return find_user_by_email email
+		end
+	end
+
 	def self.find_user_by_email email
 		query_params("SELECT * FROM users WHERE email = $1", [email]) do |results|
 			raise "Too many users found for email" if results.num_tuples > 1
 			return nil if results.num_tuples == 0
-			return results[0]
+			return DatabaseUser.new results[0]
 		end
 	end
 
@@ -40,7 +52,7 @@ class Database
 		query_params("SELECT * FROM users WHERE id = $1", [id]) do |results|
 			raise "Too many users found for id" if results.num_tuples > 1
 			return nil if results.num_tuples == 0
-			return results[0]
+			return DatabaseUser.new results[0]
 		end
 	end
 

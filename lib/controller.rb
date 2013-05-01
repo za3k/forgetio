@@ -60,7 +60,19 @@ helpers do
 		erb :account, :locals => { 
 			:warningLevel => :warningLevel,
 			:payment => payment_page
-		 }
+		}
+	end
+
+	def signup(params=nil, errors=nil)
+		if params
+			@name = params["name"]
+			@TimeZoneId = params["TimeZoneId"]
+			@email = params["email"]
+			@password = params["password"]
+			@errorMsg = errors[0].to_s
+		end
+		@timezones = Database.timezones
+		erb :signup
 	end
 end
 
@@ -91,10 +103,10 @@ post '/login.html' do
 	unless user
 		return bad_username_or_password
 	end
-	unless (User.new user).verify_password? password
+	unless user.verify_password? password
 		return bad_username_or_password
 	end
-	login user["id"]
+	login user.id
 	redirect to('/account.html')
 end
 
@@ -104,13 +116,20 @@ get '/logout.html' do
 end
 
 get '/signup.html' do
-	@timezones = Database.timezones
-	erb :signup
+	signup
 end
 
 post '/signup.html' do
-	#erb
-	"TODO"
+	user = ClientUser.new params
+	if user.valid?
+		duser = user.create!
+		puts duser
+		login duser.id
+		redirect to('/account.html')
+	else
+		params.delete "password"
+		signup params, user.errors
+	end
 end
 
 

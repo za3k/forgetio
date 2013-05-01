@@ -1,4 +1,4 @@
-class User
+class DatabaseUser
 	def roles
 		roles = [:user]
 		roles.push :admin if admin?
@@ -8,7 +8,13 @@ class User
 		["vanceza@gmail.com"].include? email
 	end
 	def verify_password? password
-		HashedPassword.verify? password, @user["password"]
+		HashedPassword.verify? password, password_hash
+	end
+end
+
+class ClientUser
+	def password_hash
+		@hashed_password ||= HashedPassword.generate password
 	end
 end
 
@@ -69,7 +75,7 @@ end
 
 before do
 	if logged_in?
-		@current_user = User.new current_user
+		@current_user = current_user
 	end
 end
 

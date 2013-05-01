@@ -9,7 +9,7 @@
   <div class="control-group">
     <label class="control-label" for="timezone">Timezone</label>
     <div class="controls">
-      <select name="TimeZoneId" id="TimeZoneId" class="span6"">
+      <select name="TimeZoneId" id="TimeZoneId" class="span6">
         <option value="" <%= "selected" if @TimeZoneId.nil? %>></option>
       <% for tz in @timezones %>
         <option value="<%= tz.id %>" <%= "selected" if @TimeZoneId == tz.id %> ><%= tz.text %></option>
