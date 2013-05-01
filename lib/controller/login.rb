@@ -1,9 +1,14 @@
 helpers do
 	def bad_username_or_password
-		login_page
+		login_page "Bad username or password."
 	end
 
-	def login_page
+	def missing_password
+		login_page "Password was empty."
+	end
+
+	def login_page error=nil
+		@errorMsg = error
 		@email = request["email"]
 		erb :login
 	end
@@ -16,8 +21,11 @@ end
 post '/login.html' do
 	email = request["email"]
 	password = request["password"]
-	if email.nil? or password.nil?
+	if email.nil? or email.empty?
 		redirect to('/login.html')
+	end
+	if password.nil? or password.empty?
+		return missing_password
 	end
 	user = Database.find_user :email => email
 	unless user
