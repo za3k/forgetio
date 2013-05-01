@@ -1,19 +1,18 @@
-<% extend 'layout.ect' %>
 <form class="form-horizontal" method="post" action="/signup.html">
   <div class="control-group">
     <label class="control-label" for="name">Name</label>
     <div class="controls">
       <input class="span6" type="text" id="name" placeholder="John Smith" name="name" 
-        value="<%= if @name? then @name else ""  %>">
+        value="<%= @name %>">
     </div>
   </div>
   <div class="control-group">
     <label class="control-label" for="timezone">Timezone</label>
     <div class="controls">
       <select name="TimeZoneId" id="TimeZoneId" class="span6"">
-        <option value="" <%= if !@TimeZoneId? then "selected" %>></option>
-      <% for tz in @req.config.timezones : %>
-        <option value="<%= tz.id %>" <%= if @TimeZoneId?.toString() == tz.id.toString() then "selected" %> ><%= tz.text %></option>
+        <option value="" <%= "selected" if @TimeZoneId.nil? %>></option>
+      <% for tz in @timezones %>
+        <option value="<%= tz.id %>" <%= "selected" if @TimeZoneId == tz.id %> ><%= tz.text %></option>
       <% end %>
       </select>          
     </div>
@@ -22,14 +21,14 @@
     <label class="control-label" for="email">Email</label>
     <div class="controls">
       <input class="span6" type="text" id="email" placeholder="fake@example.com" name="email"
-        value="<%= if @email? then @email else ""  %>">
+        value="<%= @email %>">
     </div>
   </div>
   <div class="control-group">
     <label class="control-label" for="password">Password</label>
     <div class="controls">
       <input class="span6" type="password" id="password" name="password"
-        value="<%= if @password? then @password else ""  %>">
+        value="<%= @password %>">
     </div>
   </div>
   <div class="control-group">

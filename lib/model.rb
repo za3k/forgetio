@@ -1,20 +1,20 @@
 require 'ostruct'
 
 class User
-	def initialize(userObj)
-		@user = userObj
+	def initialize hash
+		@data = hash
 	end
 	def has_role? role
 		roles.include? role
 	end
 	def method_missing(n)
-		@user[n.to_s]
+		@data[n.to_s]
 	end
 	def to_s
-		@user.to_s
+		@data.to_s
 	end
 	def credit
-		@user["credit"].to_i
+		@data["credit"].to_i
 	end
 	def lowerTimeEstimate
 		credit / 10
@@ -23,7 +23,10 @@ class User
 		credit / 5
 	end
 	def timezone
-		@user["timezone_id"]
+		@data["timezone_id"]
+	end
+	def timezone= tz
+		@data["timezone_id"] = tz
 	end
 	def all_communications
 		@_all_communications ||= Database.all_communications self
@@ -41,6 +44,9 @@ class User
 	end
 	def reminders
 		Database.current_reminders_for_user self
+	end
+	def save!
+		Database.update_user! self
 	end
 end
 

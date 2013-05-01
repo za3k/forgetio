@@ -28,10 +28,6 @@ helpers do
 		erb :login
 	end
 
-	def signup_page
-		erb :signup
-	end
-
 	def stripe_payment_key
 		if settings.development?
 	   		"pk_test_0vJgMvmOAjwiSDQQ8X2XP4Ky"
@@ -46,6 +42,25 @@ helpers do
 		@stripe_payment_key = stripe_payment_key
 		@text_messages_per_credit = 1
 		partial_erb :payment
+	end
+
+	def account
+		def warningLevel daysLeft
+			if daysLeft < 1
+		    	"alert alert-error"
+			elsif 1 <= daysLeft and daysLeft < 7
+		    	"alert"
+		  	else
+		      	"alert alert-info"
+		  	end
+		end
+
+		@user = @current_user
+		@timezones = Database.timezones
+		erb :account, :locals => { 
+			:warningLevel => :warningLevel,
+			:payment => payment_page
+		 }
 	end
 end
 
@@ -89,101 +104,39 @@ get '/logout.html' do
 end
 
 get '/signup.html' do
-	signup_page
+	@timezones = Database.timezones
+	erb :signup
 end
 
 post '/signup.html' do
+	#erb
 	"TODO"
 end
 
-get '/account.html', :auth => :user do
-	def warningLevel daysLeft
-		if daysLeft < 1
-	    	"alert alert-error"
-		elsif 1 <= daysLeft and daysLeft < 7
-	    	"alert"
-	  	else
-	      	"alert alert-info"
-	  	end
-	end
 
-	@user = @current_user
-	@timezones = Database.timezones
-	erb :account, :locals => { 
-		:warningLevel => :warningLevel,
-		:payment => payment_page
-	 }
+get '/account.html', :auth => :user do
+	account
 end
 
 post '/account.html', :auth => :user do
-	"TODO"
+	timezone = params["timezone"] or raise 'timezone missing'
+	if timezone and timezone != @current_user.timezone
+	    @current_user.timezone = timezone
+ 		@current_user.save!
+ 	end
+ 	account
 end
 
 post '/payment.html', :auth => :user do
 	"TODO"
 end
 
-# getRemindersForUser = (user, final_cb) ->
-#   errorHandler = (step, error) ->
-#     console.log("There was an error")
-#     console.log(error)
-#   steps = [
-#     (step) ->
-#       user.getReminders().success( (reminders) ->
-#         step.data.reminders = reminders
-#         step.next()
-#       ).failure((err)->
-#         step.data.getReminderErr = err
-#         step.next()
-#       )
-#     (step) ->
-#       if step.data.getReminderErr?
-#         throw step.data.getReminderErr
-#       step.next()
-#     (step) ->
-#       reminders = step.data.reminders
-#       step.data.reminders = []
-#       for r in reminders
-#         cb = step.spawn()
-#         processReminder r, errorHandler, (reminder) ->
-#           step.data.reminders.push(reminder)
-#           cb()
-#       step.next()
-#     (step) ->
-#       common.logger.debug(JSON.stringify(step.data))
-#       for r in step.data.reminders
-#         if !r.parent_id?
-#           r.parentId = r.id
-#       step.data.reminders = step.data.reminders.filter (reminder) ->
-#         for r in step.data.reminders
-#           if r.parent_id == reminder.parent_id and r.version > reminder.version
-#             return false
-#         return true
-#       step.next()
-#   ]
-#   last = (step) ->
-#     final_cb(step.data.reminders)
-#   ctrl(steps, {errorHandler: errorHandler}, last)
-
-# processTime = (time) ->
-#   time.start = time.start * 60 * 60 # seconds since midnight
-#   time.end = time.end * 60 * 60
-#   time.days = (x in time.days for x in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
-#   d = 0
-#   while time.days.length > 0
-#     d *= 2
-#     d += time.days.pop()
-#   time.days = d
-#   check(time.frequency, "Please enter a number for frequency").notEmpty().isDecimal()
-#   time
-
-
 class EmptyClientTime < DatabaseReminderTime
 	def initialize
 		super({})
 	end
 	def enabled
-		true
+		false
 	end
 	def days
 		[]
@@ -221,53 +174,6 @@ end
 
 post '/scheduled.html', :auth => :user do
 	"TODO"
-# putReminderForUser = (reminder, user, success, failure) ->
-#   errorHandler = (step, err) ->
-#     common.logger.error("There was an error")
-#     if err?.message
-#       err = err.message
-#     common.logger.error(err)
-#     failure(err)
-
-#   steps = [
-#     (step) ->
-#       common.logger.debug("Putting reminder: " + reminder)
-#       step.next()
-#     (step) ->
-#       reminder.user_id = user.id
-#       step.next()
-#     (step) ->
-#       check(reminder.message,"Message was blank").notEmpty()
-#       check(reminder.phone, "Phone number was blank").len(7,64)
-#       step.next()
-#     (step) ->
-#       common.logger.debug("Stripping out invalid times")
-#       reminder.times = reminder.times.filter (time) ->
-#         if !time.frequency
-#             return false
-#         return true
-#       step.next()
-#     (step) ->
-#       for time in reminder.times
-#         if time.frequency != ""
-#           processTime time
-#       step.next()
-#   ]
-#   last = (step) ->
-#     trans = transaction.createSaveReminderTran(reminder)
-#     transaction.runTran(trans, success)
-#   ctrl(steps, {errorHandler: errorHandler}, last)
-
-# exports.scheduledPost = (req, res) ->
-#   user = req.user.getUser()
-#   console.log(req.body)
-#   json = JSON.parse(req.body.json)
-#   for reminder in json.reminders
-#     putReminderForUser(reminder, user, () ->
-#       exports.scheduled(req, res, {successMsg: "Successfully updated."})
-#     (errMsg) ->
-#       exports.scheduled(req, res, {errorMsg: errMsg}))
-
 end
 
 get '/results.html', :auth => :user do

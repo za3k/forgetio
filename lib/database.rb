@@ -135,4 +135,9 @@ class Database
 			return result.map { |time| DatabaseReminderTime.new time }
 		end
 	end
+
+	def self.update_user! user
+		query_params("UPDATE users SET timezone_id = $2, \"updatedAt\" = 'now' WHERE id = $1",
+			[user.id, user.timezone])
+	end
 end
