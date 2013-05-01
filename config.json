@@ -1,6 +1,0 @@
-{
-	"appName":"Forget",
-	"httpPort":9001,
-	"logFile":"notify.log",
-	"debug":true
-}
