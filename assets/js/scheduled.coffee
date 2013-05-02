@@ -22,6 +22,7 @@ jQuery ->
             json.reminders.push(reminder)
         console.log(json)
         $(this).parents("form").find(".output").val(JSON.stringify(json))
+        false
       catch error
         alert("Oops, an error has occured. Please let the admin know. The error was: " + error)
         false

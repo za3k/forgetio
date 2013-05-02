@@ -4,7 +4,10 @@ require 'model/database/reminder.rb'
 require 'model/database/remindertime.rb'
 require 'model/database/timezone.rb'
 require 'model/database/user.rb'
+require 'model/client/base.rb'
 require 'model/client/user.rb'
+require 'model/client/reminder.rb'
+require 'model/client/remindertime.rb'
 
 class Hash
 	def has_keys? keys

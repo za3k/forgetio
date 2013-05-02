@@ -21,8 +21,15 @@ configure do
 	set :session_secret, '8bc5a4f3fc2d27837b1f22dd2241ef9d'
 	set :session_expire, 60 * 60
 
-	set :app_name, "Test App Name"
+	# Database
+	Database.dbname = 'notify2'
+
+	set :app_name, "Reminder"
 
 	# Doesn't work?
 	set :port, 9001
+
+	if Database.timezones.empty?
+		Database.create_timezones!
+	end
 end

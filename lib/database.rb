@@ -10,8 +10,16 @@ module PG
 end
 
 class Database
+	def self.dbname= name
+		@@dbname = name
+	end
+
+	def self.dbname
+		@@dbname
+	end
+
 	def self.connect(&block)
-		connection = PG.connect(dbname: 'notify')
+		connection = PG.connect(dbname: dbname)
 		block.call connection
 		connection.close
 	end
@@ -29,9 +37,8 @@ class Database
 	end
 
 	def self.create_user name, password_hash, timezone_id, email
-		query_params("INSERT INTO users 
-			(credit, name, password, timezone_id, email,
-			\"createdAt\", \"updatedAt\") 
+		query_params("INSERT INTO users (credit, name, password, 
+			timezone_id, email, \"createdAt\", \"updatedAt\") 
 			VALUES (0, $1, $2, $3, $4, 'now', 'now')", 
 			[name, password_hash, timezone_id, email]) do |results|
 			
@@ -70,6 +77,19 @@ class Database
 	def self.timezones
 		query("SELECT * FROM timezones") do |result|
 			return result.hashes.map { |tz | Timezone.new tz }
+		end
+	end
+
+	def self.create_timezone! text, seconds
+		query_params("INSERT INTO timezones (\"offset\", text, \"createdAt\", 
+			\"updatedAt\") VALUES ($1, $2, 'now', 'now')", [seconds, text]) do |res|
+			raise "Timezone not inserted" unless res.cmd_tuples == 1
+		end
+	end
+
+	def self.create_timezones!
+		for timezone in source_timezones
+			create_timezone! timezone[0], (timezone[1] * 3600).to_i
 		end
 	end
 
@@ -117,9 +137,16 @@ class Database
 	end
 
 	def self.all_reminders_for_user user
-		query_params("SELECT * FROM reminders WHERE reminders.id = $1",
+		query_params("SELECT * FROM reminders WHERE reminders.user_id = $1",
 			[user.id]) do |result|
 			return result.map { |reminder| DatabaseReminder.new reminder }
+		end
+	end
+
+	def self.find_reminder id
+		query_params("SELECT * FROM reminders WHERE reminders.id = $1",
+			[id]) do |result|
+			return DatabaseReminder.new result[0]
 		end
 	end
 
@@ -127,7 +154,7 @@ class Database
 		reminders = all_reminders_for_user user
 		reminders.reject do |reminder|
 			reminders.any? do |other_reminder|
-				other_reminder.newer_version_of_same_reminder? reminder
+				reminder.is_parent_of? other_reminder
 			end
 		end
 	end
@@ -152,4 +179,51 @@ class Database
 		query_params("UPDATE users SET timezone_id = $2, \"updatedAt\" = 'now' WHERE id = $1",
 			[user.id, user.timezone])
 	end
+
+	def self.update_reminder! reminder
+		create_reminder! reminder, reminder.version.to_i + 1, reminder.id
+	end
+
+	def self.create_reminder! reminder, version=0, parent_id=nil
+		unless reminder.user_has_permission?
+			raise "User does not own the reminder they are trying to save!"
+		end
+		connect do |conn|
+			conn.transaction do |conn|
+				phone_id = create_phone! reminder.user_id, reminder.phone_number, conn
+				raise "No phone id" if phone_id.nil? or phone_id.empty?
+				conn.exec_params("INSERT INTO reminders (version, parent_id, 
+						user_id, message, phone_id, \"createdAt\", \"updatedAt\")
+						VALUES ($1, $2, $3, $4, $5, 'now', 'now') RETURNING id, version",
+						[version, parent_id,
+						reminder.user_id, reminder.message, phone_id]) do |res|
+					raise "Failed to insert reminder" unless res.cmd_tuples == 1
+					new_reminder_id = res[0]["id"]
+					for time in reminder.valid_times
+						create_time! time, new_reminder_id, conn
+					end
+					new_reminder_id
+				end
+			end
+		end
+	end
+
+	def self.create_phone! user_id, phone_number, conn 
+		conn.exec_params("INSERT INTO phones (user_id, number, \"createdAt\", \"updatedAt\")
+			VALUES ($1, $2, 'now', 'now') RETURNING id", [user_id, phone_number]) do |res|
+			raise "Failed to add phone number" unless res.num_tuples == 1
+			res[0]["id"]
+		end
+	end
+
+	def self.create_time! time, reminder_id, conn
+		conn.exec_params("INSERT INTO reminder_times
+			(start, \"end\", frequency, days, reminder_id, \"createdAt\", \"updatedAt\") 
+			VALUES ($1, $2, $3, $4, $5, 'now', 'now') RETURNING id", 
+			[time.start_seconds, time.end_seconds, time.frequency, time.days_to_i, reminder_id]) do |res|
+			raise "Failed to add reminder time" unless res.num_tuples == 1
+			res[0]["id"]
+		end
+	end
+
 end

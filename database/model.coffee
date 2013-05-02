@@ -1,7 +1,9 @@
 pg = require 'pg'
-common = require '../common'
-nconf = common.nconf
-logger = common.logger
+#common = require '../common'
+#nconf = common.nconf
+#logger = common.logger
+logger = () ->
+
 
 extern=(name,value)->module.exports[name]= value
 
@@ -57,8 +59,8 @@ extern "findAllTimezones", (cb) ->
 
 Sequelize = require("sequelize")
 sequelize = new Sequelize('notify','postgres','brinksucksballs', {
-    host:nconf.get("dbHost")
-    port:nconf.get("dbPort")
+    host:'notify2'
+    #port:nconf.get("dbPort")
     dialect:'postgres'
     logging:logger.debug
     omitNull:true

@@ -26,13 +26,13 @@ class DatabaseReminder
 	def raw_parent_id
 		@data["parent_id"]
 	end
+	def user_id
+		@data["user_id"]
+	end
 	def parent_id
 		raw_parent_id or id
 	end
-	def same_parent? other
-		parent_id == other.parent_id
-	end
-	def newer_version_of_same_reminder? other
-		same_parent? other and version > other.version
+	def is_parent_of? other
+		id == other.parent_id
 	end
 end
