@@ -9,6 +9,8 @@ require 'controller.rb'
 #TODO: add logging
 #TODO: add asset compilers
 #TODO?: add tests
+#TODO: Add something to create the database, and reset it for dev?
+# => What's a rakefile?  Can I use that to run stuff and do databases?
 
 configure do
 	# Sinatra Defaults
