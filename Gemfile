@@ -1,8 +1,9 @@
 source "https://rubygems.org"
 
-gem 'sinatra'
-gem 'rack-flash'
-gem 'sinatra-session'
-gem 'pg'
-gem 'openssl'
 gem 'json'
+gem 'openssl'
+gem 'pg'
+gem 'rack-flash'
+gem 'sinatra'
+gem 'sinatra-session'
+gem 'stripe'

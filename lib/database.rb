@@ -226,4 +226,28 @@ class Database
 		end
 	end
 
+	def self.create_user_payment! credits, money, stripeToken
+		connect do |conn|
+			conn.exec_params("INSERT INTO user_payments
+				(credit, money, stripe_token, \"createdAt\", \"updatedAt\")
+				VALUES ($1, $2, $3, 'now', 'now') RETURNING id, credit, money, stripe_token",
+				[credits, money, stripeToken]) do |res|
+				raise "Failed to add user payment" unless res.num_tuples == 1
+				return DatabaseUserPayment.new res.hashes[0]
+			end
+		end
+	end
+
+	def self.update_user_payment! payment
+		connect do |conn|
+			conn.exec_params("UPDATE user_payments SET credit=$1, money=$2, stripe_token=$3,
+				stripe_fee=$4, stripe_charge=$5, \"updatedAt\"='now' WHERE id=$6",
+				[payment.credits, payment.money, payment.stripe_token, payment.fee,
+					payment.stripe_charge, payment.id]) do |res|
+				raise "Failed to update payment" unless res.cmd_tuples == 1
+				return payment
+			end
+		end
+	end
+
 end

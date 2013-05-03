@@ -1,5 +1,5 @@
 helpers do
-	def account
+	def account options={}
 		def warningLevel daysLeft
 			if daysLeft < 1
 		    	"alert alert-error"
@@ -12,6 +12,12 @@ helpers do
 
 		@user = @current_user
 		@timezones = Database.timezones
+		if options.key? :errorMsg
+			@errorMsg = options[:errorMsg]
+		end
+		if options.key? :successMsg
+			@errorMsg = options[:successMsg]
+		end
 		erb :account, :locals => { 
 			:warningLevel => :warningLevel,
 			:payment => payment_page

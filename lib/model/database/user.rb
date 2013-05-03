@@ -14,6 +14,9 @@ class DatabaseUser
 	def credit
 		@data["credit"].to_i
 	end
+	def credit= credits
+		@data["credit"] = credits.to_s
+	end
 	def lowerTimeEstimate
 		credit / 10
 	end
