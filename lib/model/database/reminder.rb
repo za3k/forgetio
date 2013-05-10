@@ -35,4 +35,15 @@ class DatabaseReminder
 	def is_parent_of? other
 		id == other.parent_id
 	end
+	def same_parent? other
+		return false if parent_id.nil?
+		other.parent_id == parent_id
+	end
+	def is_newer_version_of? other
+		if other.is_parent_of? self
+			return true
+		elsif same_parent? other
+			other.version.to_i < version.to_i
+		end
+	end
 end
