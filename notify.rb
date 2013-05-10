@@ -1,6 +1,6 @@
+#!/user/bin/env ruby
 require 'sinatra'
 require 'sinatra/session'
-require 'ruby-debug'
 require 'model.rb'
 require 'database.rb'
 require 'controller.rb'
@@ -24,7 +24,7 @@ configure do
 	set :session_expire, 60 * 60
 
 	# Database
-	Database.dbname = 'notify2'
+	Database.dbname = 'notify'
 
 	set :app_name, "Reminder"
 
