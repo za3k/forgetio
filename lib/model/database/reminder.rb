@@ -41,7 +41,7 @@ class DatabaseReminder
 	end
 	def is_newer_version_of? other
 		if other.is_parent_of? self
-			return true
+			true
 		elsif same_parent? other
 			other.version.to_i < version.to_i
 		end

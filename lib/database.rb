@@ -154,7 +154,7 @@ class Database
 		reminders = all_reminders_for_user user
 		reminders.reject do |reminder|
 			reminders.any? do |other_reminder|
-				reminder.is_parent_of? other_reminder
+				other_reminder.is_newer_version_of? reminder
 			end
 		end
 	end
