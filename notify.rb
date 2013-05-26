@@ -26,7 +26,7 @@ configure do
 	# Database
 	Database.dbname = 'notify'
 
-	set :app_name, "Reminder"
+	set :app_name, "Forget"
 
 	# Doesn't work?
 	set :port, 9001
