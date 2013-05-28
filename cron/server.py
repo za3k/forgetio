@@ -12,7 +12,7 @@ from sql_def import User, Phone, Reminder, SentMessage, ReceivedMessage
 import json
 import time, threading
 
-engine = create_engine('postgresql://localhost/notify', echo=True)
+engine = create_engine('postgresql://localhost/notify')
 # create a Session
 Session = sessionmaker(bind=engine)
 
