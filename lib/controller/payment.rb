@@ -103,5 +103,5 @@ post '/payment.html', :auth => :user do
 	userPayment.fee = fee
 	userPayment.stripe_charge = id
 	userPayment.save!
-	return success "#{credits} credits were successfully added to your account."
+	return success "#{credits} credits were successfully added to your account. Thank you for keeping forget.io running!"
 end
