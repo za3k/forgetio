@@ -5,7 +5,9 @@ helpers do
 		def pad_reminders! reminders
 			# Pad with empty space to fill in
 			for r in reminders
-				r.times.push EmptyClientTime.new
+				[2 - r.times.length, 0].max.times do
+					r.times.push EmptyClientTime.new
+				end
 			end
 			reminders.push EmptyClientReminder.new
 		end
