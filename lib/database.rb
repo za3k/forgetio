@@ -137,14 +137,14 @@ class Database
 	end
 
 	def self.all_reminders_for_user user
-		query_params("SELECT * FROM reminders WHERE reminders.user_id = $1",
+		query_params("SELECT * FROM reminders WHERE user_id = $1",
 			[user.id]) do |result|
 			return result.map { |reminder| DatabaseReminder.new reminder }
 		end
 	end
 
 	def self.find_reminder id
-		query_params("SELECT * FROM reminders WHERE reminders.id = $1",
+		query_params("SELECT * FROM reminders WHERE id = $1",
 			[id]) do |result|
 			return DatabaseReminder.new result[0]
 		end
