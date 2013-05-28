@@ -32,16 +32,25 @@ class HashedPassword
 	end
 	def self.hash(algorithm, salt, iterations, password)
 		return nil unless algorithm == "sha1"
-		return nil unless iterations == 1
-		hashed = Digest.hexencode(OpenSSL::HMAC.digest('sha1', salt, password))
+		hashed = password
+		iterations.times do
+			hashed = Digest.hexencode(OpenSSL::HMAC.digest('sha1', salt, hashed))
+		end
 		[algorithm, salt, iterations.to_s, hashed].join "$"
 	end
 	def self.isHashed? hashed_password
 		(hashed_password.split "$").length == 4
 	end
-	def self.verify?(password, hashed_password)
+	def self.rehash(password, hashed_password)
 		algorithm, salt, iterations, hashed = hashed_password.split "$"
-		hashed_password == hash(algorithm, salt, iterations.to_i, password)
+		hash(algorithm, salt, iterations.to_i, password)
+	end
+	def self.verify?(password, hashed_password)
+		rehashed = rehash(password, hashed_password)
+		puts password
+		puts hashed_password
+		puts rehashed
+		hashed_password == rehashed
 	end
 end
 
