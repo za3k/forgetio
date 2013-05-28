@@ -11,6 +11,9 @@ class DatabaseReminderTime
 	def secondsToHours s
 		return s / 60 / 60
 	end
+	def hoursToSeconds h
+		return h * 60 * 60
+	end
 	def convertDays d
 		days = []
 		for day in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]

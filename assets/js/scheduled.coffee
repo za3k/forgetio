@@ -12,7 +12,11 @@ jQuery ->
                 $(".day > :checkbox", this).each ->
                     if this.checked
                         time.days.push(this.name)
-                reminder.times.push(time)
+                time.enabled = false
+                $(".send-checkbox", this).each ->
+                    if this.checked
+                        time.enabled = true
+                        reminder.times.push(time)
             reminder.message = $(".message", this).get(0).value
             reminder.phone = $(".phone", this).get(0).value
             $(".id", this).each ->
@@ -22,7 +26,6 @@ jQuery ->
             json.reminders.push(reminder)
         console.log(json)
         $(this).parents("form").find(".output").val(JSON.stringify(json))
-        false
       catch error
         alert("Oops, an error has occured. Please let the admin know. The error was: " + error)
         false

@@ -14,15 +14,14 @@ class ClientReminderTime < ClientModelBase
 		add_error "Missing end time" if end_time.nil? or end_time.empty?
 	end
 	def start_seconds
-		start_time * 3600
+		start_time.to_i * 3600
 	end
 	def end_seconds
-		start_time * 3600
+		start_time.to_i * 3600
 	end
 	def days_to_i
-		"TODO"
 		d = 0
-		for day in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+		for day in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].reverse
 			d *= 2
 			if days.include? day
 				d += 1

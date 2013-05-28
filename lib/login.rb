@@ -47,9 +47,6 @@ class HashedPassword
 	end
 	def self.verify?(password, hashed_password)
 		rehashed = rehash(password, hashed_password)
-		puts password
-		puts hashed_password
-		puts rehashed
 		hashed_password == rehashed
 	end
 end
