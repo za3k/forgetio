@@ -177,6 +177,7 @@ def schedule_messages():
     session = Session()
     total_queued_messages = 0
     for user in session.query(User):
+        print(user.email)
         times = []
         for reminder in user.reminders:
             if is_latest_reminder(reminder): #latest version of the reminder

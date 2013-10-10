@@ -150,6 +150,8 @@ class Database
 		end
 	end
 
+	#CREATE TEMP VIEW current_reminders AS SELECT reminder.* FROM (select potential_current.* from reminders as potential_current LEFT OUTER JOIN reminders as potential_parent on potential_current.id = potential_parent.parent_id WHERE potential_parent.parent_id IS NULL) as reminder LEFT OUTER JOIN (SELECT max(version) as version, parent_id from reminders GROUP BY parent_id) as max_version on reminder.parent_id = max_version.parent_id WHERE (reminder.parent_id IS NULL) OR (reminder.version = max_version.version);
+
 	def self.current_reminders_for_user user
 		reminders = all_reminders_for_user user
 		reminders.reject do |reminder|
