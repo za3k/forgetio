@@ -17,9 +17,9 @@ helpers do
 
 	def secret_key
 		if settings.development?
-	   		"sk_test_cnma6aLXwZVj28xddzaby1fL"
+            settings.twilio_development_secret_key
 	  	elsif settings.test? or settings.production?
-	    	"sk_live_fNeG2hpEa8Du0Dc5pYarIHT0"
+            settings.twilio_production_secret_key
 	    else
 	    	raise "environment not found"
 	  	end

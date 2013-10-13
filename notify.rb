@@ -1,4 +1,5 @@
 #!/user/bin/env ruby
+require 'yaml'
 require 'sinatra'
 require 'sinatra/session'
 require 'model.rb'
@@ -30,6 +31,11 @@ configure do
 
 	# Doesn't work?
 	set :port, 9001
+
+    yaml = YAML.load_file("config.yaml")
+    yaml.each_pair do |key, value|
+        set(key.to_sym, value)
+    end
 
 	if Database.timezones.empty?
 		Database.create_timezones!
