@@ -42,3 +42,11 @@ get '/logout.html' do
 	logout
 	redirect to('/login.html')
 end
+
+get '/reset', :auth => :admin do
+	email = request["email"]
+	user = Database.find_user :email => email
+	password = request["password"]
+	user.set_password! password
+	user.save!
+end

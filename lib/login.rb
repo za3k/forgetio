@@ -10,6 +10,9 @@ class DatabaseUser
 	def verify_password? password
 		HashedPassword.verify? password, password_hash
 	end
+	def set_password! password
+		@data["password"] = HashedPassword.generate password
+	end
 end
 
 class ClientUser
