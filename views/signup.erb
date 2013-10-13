@@ -1,0 +1,39 @@
+<form class="form-horizontal" method="post" action="/signup.html">
+  <div class="control-group">
+    <label class="control-label" for="name">Name</label>
+    <div class="controls">
+      <input class="span6" type="text" id="name" placeholder="John Smith" name="name" 
+        value="<%= @name %>">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="timezone">Timezone</label>
+    <div class="controls">
+      <select name="TimeZoneId" id="TimeZoneId" class="span6">
+        <option value="" <%= "selected" if @TimeZoneId.nil? %>></option>
+      <% for tz in @timezones %>
+        <option value="<%= tz.id %>" <%= "selected" if @TimeZoneId == tz.id %> ><%= tz.text %></option>
+      <% end %>
+      </select>          
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="email">Email</label>
+    <div class="controls">
+      <input class="span6" type="text" id="email" placeholder="fake@example.com" name="email"
+        value="<%= @email %>">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="password">Password</label>
+    <div class="controls">
+      <input class="span6" type="password" id="password" name="password"
+        value="<%= @password %>">
+    </div>
+  </div>
+  <div class="control-group">
+    <div class="controls">
+      <button type="submit" class="btn btn-primary span2 offset3">Register</button>
+    </div>
+  </div>
+</form>

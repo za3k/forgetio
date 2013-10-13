@@ -1,0 +1,5 @@
+notify.log
+__pycache__
+log.err
+config.yaml
+notify_backup
