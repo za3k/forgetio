@@ -178,8 +178,8 @@ class Database
 	end
 
 	def self.update_user! user
-		query_params("UPDATE users SET timezone_id = $2, \"updatedAt\" = 'now', password = $3 WHERE id = $1",
-			[user.id, user.timezone, user.password_hash])
+		query_params("UPDATE users SET timezone_id = $2, \"updatedAt\" = 'now', password = $3, credit = $4 WHERE id = $1",
+			[user.id, user.timezone, user.password_hash, user.credit])
 	end
 
 	def self.update_reminder! reminder
