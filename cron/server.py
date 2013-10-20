@@ -280,7 +280,8 @@ def schedule_reminder_time_for_user(reminder_time, user):
   
     scheduled_time = next_scheduled_time(reminder_time.start, reminder_time.end, reminder_time.days, reminder_time.frequency, datetime.utcnow(), user.timezone.offset)
     if scheduled_time is None:
-    	return None
+        user.credit += 1
+        return None
     
     print(scheduled_time)
     print(reminder_time.reminder.message)
