@@ -1,0 +1,3 @@
+#!/usr/bin/screen -c
+screen -t "Server" 2 /home/twilio/.gem/ruby/2.0.0/bin/shotgun -p 9001 notify.rb -I lib
+screen -t "Cron" 3 python cron/server.py
