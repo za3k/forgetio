@@ -1,0 +1,11 @@
+-Make credits running out date more accurate
+-Fix passwords
+-Let people delete reminders
+-Make scheduling-reminders page more ajax-y / Factor things out into an API
+-Add email reminders
+-Add chat reminders
+-Add write-only support
+-Add explanation of what the site does
+-Maybe rename home and/or change what clicking "forget" does (/#, not #)
+-Register numbers
+-Dreeves error: "i picked two reminders between noon and 1pm"
