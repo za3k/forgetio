@@ -9,3 +9,6 @@
 -Maybe rename home and/or change what clicking "forget" does (/#, not #)
 -Register numbers
 -Dreeves error: "i picked two reminders between noon and 1pm"
+-Too short a password shouldn't reset time zone
+-Improve description
+-Add warning about no credits to all pages

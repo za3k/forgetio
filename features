@@ -1,0 +1,8 @@
+Twilio feature requests:
+Fixed-time reminders once a day (poss in fuzzy range?)
+One-time reminders
+Phone number confirmation
+Don't just randomly drop people in "message scheduling" after login. Give them a walkthrough or something.
+Results: Hide messages in the future
+Results: Display results in user setting time zone
+Scheduled: Give alert if you change scheduled and have no credit
